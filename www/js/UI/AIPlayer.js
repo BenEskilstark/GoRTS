@@ -1,39 +1,37 @@
-import {dispatchToServer} from '../sockets.js';
+import StatefulHTML from './StatefulHTML.js';
+import {getFreePositions} from '../selectors/selectors.js';
+import {oneOf, randomIn, normalIn, weightedOneOf} from '../utils/stochastic.js';
 
-export default class AIPlayer extends HTMLElement {
-  token = null;
+/**
+ * Use like:
+ *
+ * <ai-player apm=300></ai-player>
+ *
+ */
+export default class AIPlayer extends StatefulHTML {
 
   connectedCallback() {
-    this.registerState();
     const apm = parseInt(this.getAttribute("apm"));
     this.dispatch({isAI: true, apm});
     this.setupAI();
   }
 
-  registerState() {
-    const storeEvent = new CustomEvent('requestStore', {bubbles: true, detail: {}});
-    this.dispatchEvent(storeEvent);
-    Object.assign(this, storeEvent.detail);
-  }
-
   disconnectedCallback() {
-    unsubscribe(this.token);
+    this.unsubscribe(this.token); // super
+    clearInterval(this.playInterval);
   }
 
   setupAI() {
-    const playInterval = setInterval(() => {
+    this.playInterval = setInterval(() => {
       const state = this.getState();
       if (!state.myTurn) return;
 
       const {color, clientID, socket, width, height} = state;
 
-      const x = Math.floor(Math.random() * (width - 1)) + 1;
-      const y = Math.floor(Math.random() * (height - 1)) + 1;
+      const {x, y} = oneOf(getFreePositions(state));
 
-      this.dispatch({type: 'PLACE_PIECE', x, y, color});
-      dispatchToServer(socket, {type: 'PLACE_PIECE', x, y, color});
-      this.dispatch({type: 'END_TURN', clientID});
-      dispatchToServer(socket, {type: 'END_TURN', clientID});
+      this.dispatchToServerAndSelf({type: 'PLACE_PIECE', x, y, color});
+      this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
 
     }, 1000 / (this.getState().apm / 60));
   }

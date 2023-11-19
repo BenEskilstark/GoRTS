@@ -1,38 +1,29 @@
-import {dispatchToServer} from '../sockets.js';
+import StatefulHTML from './StatefulHTML.js';
+import {encodePos} from '../utils/positions.js';
+import {getPieceGroupIndex, getNumLiberties} from '../selectors/selectors.js';
 
-export default class GameBoard extends HTMLElement {
-  token = null;
-
+export default class GameBoard extends StatefulHTML {
   connectedCallback() {
-    this.registerState();
-    this.style.display = "none";
     const width = parseInt(this.getAttribute("width"));
     const height = parseInt(this.getAttribute("height"));
     const color = this.getAttribute("color");
     this.dispatch({width, height, color, myTurn: color == "black"});
-    this.token = this.subscribe(this.onChange.bind(this))
-  }
-
-  registerState() {
-    const storeEvent = new CustomEvent('requestStore', {bubbles: true, detail: {}});
-    this.dispatchEvent(storeEvent);
-    Object.assign(this, storeEvent.detail);
-  }
-
-  disconnectedCallback() {
-    unsubscribe(this.token);
   }
 
   onChange(state) {
-    if (state.screen == "LOBBY") return;
-    this.render(state);
+    if (state.screen != "GAME") {
+      this.style.display = "none";
+      return;
+    }
+    this.style.display = "flex";
+
+    this.render(state, this.querySelector("canvas"));
   }
 
-  render(state) {
+  render(state, canvas) {
+    if (!canvas) return;
     const {width, height} = state;
 
-    const canvas = this.querySelector("canvas")
-    if (!canvas) return;
     const ctx = canvas.getContext("2d");
     const sqSize = canvas.width / width;
 
@@ -67,17 +58,37 @@ export default class GameBoard extends HTMLElement {
       }
     }
 
-    for (const piece of state.pieces) {
-      const {x, y, color} = piece;
+    for (const p in state.pieces) {
+      const {x, y, color} = state.pieces[p];
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(x * sqSize, y * sqSize, sqSize / 2 - 3, 0, Math.PI * 2);
       ctx.fill();
+
+      // Draw debugging info on piece
+      if (false) {
+        const groupIndex = getPieceGroupIndex(state, state.pieces[p]);
+        const numLiberties = getNumLiberties(state, state.groups[groupIndex]);
+        ctx.font = "16px Arial"; // Adjust the size and font style as needed
+        ctx.fillStyle = "red";   // Set the color of the text to red
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        // Calculate the position where the text should be placed
+        const textX = x * sqSize;
+        const textY = y * sqSize;
+        // Draw text
+        ctx.fillText(numLiberties.toString(), textX, textY);
+      }
+    }
+
+    if (!state.myTurn) {
+      ctx.fillStyle = "rgba(0,0,0,0.1)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
     }
   }
 
   canvasClick(ev) {
-    const {width, height, color, myTurn, clientID, socket} = this.getState();
+    const {width, height, color, myTurn, clientID, socket, pieces} = this.getState();
     if (!myTurn) return;
 
     const canvas = this.querySelector("canvas")
@@ -87,12 +98,11 @@ export default class GameBoard extends HTMLElement {
     const x = Math.round(ev.offsetX / sqSize);
     const y = Math.round(ev.offsetY / sqSize);
 
-    if (x == 0 || x == width || y == 0 || y == height) return;
+    if (x == 0 || x == width || y == 0 || y == height) return; // outside the border
+    if (pieces[encodePos({x, y})]) return; // already occupied
 
-    this.dispatch({type: 'PLACE_PIECE', x, y, color});
-    dispatchToServer(socket, {type: 'PLACE_PIECE', x, y, color});
-    this.dispatch({type: 'END_TURN', clientID});
-    dispatchToServer(socket, {type: 'END_TURN', clientID});
+    this.dispatchToServerAndSelf({type: 'PLACE_PIECE', x, y, color});
+    this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
   }
 }
 

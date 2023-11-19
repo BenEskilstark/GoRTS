@@ -8,17 +8,7 @@
     <script type="module" src="js/index.js"></script>
     <div style="width: 100%; margin: auto">
       <stateful-client>
-        <game-lobby>
-          <h2>Realtime Go</h2>
-          <div>
-            <button onclick="this.closest('game-lobby').createGame()">
-              Create New Game
-            </button>
-          </div>
-          <div class="gameList">
-
-          </div>
-        </game-lobby>
+        <game-lobby></game-lobby>
         <game-board width=20 height=20 color="black">
           <canvas class="boardCanvas" width=800 height=800
             onclick="this.closest('game-board').canvasClick(event)"
@@ -28,25 +18,13 @@
 
 
       <stateful-client>
-        <ai-player apm=30></ai-player>
-        <game-lobby>
-          <h2>Realtime Go</h2>
-          <div>
-            <button onclick="this.closest('game-lobby').createGame()">
-              Create New Game
-            </button>
-          </div>
-          <div class="gameList">
-
-          </div>
-        </game-lobby>
+        <game-lobby></game-lobby>
         <game-board width=20 height=20 color="white">
           <canvas class="boardCanvas" width=800 height=800
             onclick="this.closest('game-board').canvasClick(event)"
           />
         </game-board>
       </stateful-client>
-
 
     </div>
   </body>

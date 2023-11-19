@@ -98,7 +98,7 @@ const leaveSession = (state, clientID, sessionID) => {
 };
 
 
-const startSession = (state, sessionID) => {
+const startSession = (state, clientID, sessionID) => {
   const {sessions} = state;
   sessions[sessionID].started = true;
 
@@ -122,6 +122,7 @@ const emit = (state, action, clientID, sessionOnly, includeSelf) => {
   }
   if (!includeSelf) clientsToSendTo = clientsToSendTo.filter(id => id != clientID)
   for (const id of clientsToSendTo) {
+    if (!clientToSocket[id]) continue; // client must've just disconnected
     clientToSocket[id].emit('action', action);
   }
 }

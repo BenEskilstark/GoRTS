@@ -1,51 +1,67 @@
-import {dispatchToServer} from '../sockets.js';
+import StatefulHTML from './StatefulHTML.js';
 
-export default class Lobby extends HTMLElement {
-  token = null;
+const lobbyContent = `
+  <h2>Realtime Go</h2>
+  <div>
+    <button onclick="this.closest('game-lobby').createGame()">
+      Create New Game
+    </button>
+  </div>
+  <div class="gameList">
 
+  </div>
+`;
+
+const listedGame = (state, sessionID) => {
+  const {sessions} = state;
+  const session = sessions[sessionID];
+  const joinAction = JSON.stringify({type: 'JOIN_SESSION', sessionID})
+    .replaceAll('"', "'");
+  const startAction = JSON.stringify({type: 'START_SESSION', sessionID})
+    .replaceAll('"', "'");
+  const amHost = state.sessionID == sessionID && session.clients[0] == state.clientID;
+  return `
+    <div class="gameInLobby">
+      ${session.name} Players: ${session.clients.length}
+      <button
+        style="display: ${state.sessionID ? 'none' : 'inline'}"
+        onclick="this.closest('game-lobby').dispatchToServer(${joinAction})"
+      >
+        Join Game
+      </button>
+      <button
+        style="display: ${amHost ? 'inline' : 'none'}"
+        onclick="this.closest('game-lobby').dispatchToServer(${startAction})"
+      >
+        Start Game
+      </button>
+    </div>
+  `;
+}
+
+
+export default class Lobby extends StatefulHTML {
   connectedCallback() {
-    this.registerState();
-    this.token = this.subscribe(this.onChange.bind(this))
-  }
-
-  registerState() {
-    const storeEvent = new CustomEvent('requestStore', {bubbles: true, detail: {}});
-    this.dispatchEvent(storeEvent);
-    Object.assign(this, storeEvent.detail);
-  }
-
-  disconnectedCallback() {
-    unsubscribe(this.token);
+    this.innerHTML = lobbyContent;
   }
 
   onChange(state) {
+    if (state.screen != "LOBBY") {
+      this.style.display = "none";
+      return;
+    }
+    this.style.display = "flex";
+
     const games = [];
     for (const sessionID in state.sessions) {
-      const session = state.sessions[sessionID];
-      const joinAction = JSON.stringify({type: 'JOIN_SESSION', sessionID})
-        .replaceAll('"', "'");
-      games.push(`
-        <div class="gameInLobby">
-          ${session.name} Players: ${session.clients.length}
-          <button
-            style="display: ${state.sessionID ? 'none' : 'inline'}"
-            onclick="this.closest('game-lobby').toServer(${joinAction})"
-          >
-            Join Game
-          </button>
-        </div>
-      `);
+      games.push(listedGame(state, sessionID));
     }
     const gameList = this.querySelector(".gameList");
     gameList.innerHTML = games.join("\n");
   }
 
   createGame() {
-    this.toServer({type: "CREATE_SESSION"});
-  }
-
-  toServer(action) {
-    dispatchToServer(this.getState().socket, action);
+    this.dispatchToServer({type: "CREATE_SESSION"});
   }
 
 }
