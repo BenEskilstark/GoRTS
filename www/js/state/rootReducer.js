@@ -1,4 +1,5 @@
 import {placePiece} from '../state/goOperations.js';
+import {isLegalPlacement} from '../selectors/selectors.js';
 
 export const rootReducer = (state, action) => {
   if (state === undefined) state = initState();
@@ -15,9 +16,19 @@ export const rootReducer = (state, action) => {
     }
     case 'PLACE_PIECE': {
       const {x, y, color} = action;
-      placePiece(state, {x, y, color});
+      if (isLegalPlacement(state, action)) {
+        placePiece(state, {x, y, color});
+      }
       return state;
     }
+
+    case 'QUEUE_ACTION': {
+      state.actionQueue.push(action.action);
+      return state;
+    }
+    case 'CLEAR_ACTION_QUEUE':
+      return {...state, actionQueue: []};
+
     case 'LEAVE_SESSION': {
       if (action.clientID == state.clientID) {
         state.sessionID = null;
@@ -41,6 +52,7 @@ export const initState = () => {
     sessionID: null, // session I am in
     numConnectedClients: 0,
     clientID: null,
+    realtime: true,
   };
 }
 
@@ -51,6 +63,7 @@ export const initGameState = (players, clientID) => {
     players, // Array<ClientID>
     turnIndex: 0, // index of player whose turn it is
     turn: 0,
+    actionQueue: [], // Array<Action>
     color: colors[players.indexOf(clientID)],
     pieces: {}, // {EncodedPos: {color, x, y}}
     groups: [], // Array<{color, pieces: Array<EncodedPos>, liberties: Number}>

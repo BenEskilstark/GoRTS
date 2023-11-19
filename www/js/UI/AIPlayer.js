@@ -21,17 +21,31 @@ export default class AIPlayer extends StatefulHTML {
     clearInterval(this.playInterval);
   }
 
+  // dispatches to the action to self and server if it's my turn,
+  // else just queue's the action to myself
+  // TODO: this is also defined in GameBoard
+  dispatchOrQueue(action) {
+    const {myTurn, realtime} = this.getState();
+    if (!myTurn && realtime) {
+      this.dispatch({type: 'QUEUE_ACTION', action});
+    } else {
+      this.dispatchToServerAndSelf(action);
+    }
+  }
+
   setupAI() {
     this.playInterval = setInterval(() => {
       const state = this.getState();
-      if (!state.myTurn) return;
-
-      const {color, clientID, socket, width, height} = state;
+      if (state.screen != "GAME" ) return;
+      const {color, clientID, socket, width, height, realtime, myTurn} = state;
+      if (!realtime && !myTurn) return;
 
       const {x, y} = oneOf(getFreePositions(state));
 
-      this.dispatchToServerAndSelf({type: 'PLACE_PIECE', x, y, color});
-      this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
+      this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
+      if (!realtime) {
+        this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
+      } // else turn end is handled already
 
     }, 1000 / (this.getState().apm / 60));
   }

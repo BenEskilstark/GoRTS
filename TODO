@@ -1,6 +1,5 @@
 
   - Need more succinct way to access dispatch, getState, etc. from within html
-  - copy over StatefulHTML class to simpleWWW and integrate it (w/README)
 
   - Add switch for turn-based vs real-time
     - turn-based ends your turn whenever you place a piece

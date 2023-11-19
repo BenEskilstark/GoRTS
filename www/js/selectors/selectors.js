@@ -62,6 +62,17 @@ export const getNumLiberties = (state, group) => {
   return numLiberties;
 }
 
+export const isLegalPlacement = (state, position) => {
+  const {width, height, pieces} = state;
+  const {x, y} = position;
+  // outside the border
+  if (x == 0 || x == width || y == 0 || y == height) return false;
+  // already occupied
+  if (pieces[encodePos({x, y})]) return false;
+
+  return true;
+}
+
 
 // for debugging
 export const getPieceGroupIndex = (state, piece) => {
@@ -73,6 +84,6 @@ export const getPieceGroupIndex = (state, piece) => {
       }
     }
   }
-  console.log("piece not in group!", piece);
+  console.log("piece not in a group!", piece);
   return -1;
 }

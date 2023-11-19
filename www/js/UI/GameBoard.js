@@ -1,8 +1,14 @@
 import StatefulHTML from './StatefulHTML.js';
 import {encodePos} from '../utils/positions.js';
-import {getPieceGroupIndex, getNumLiberties} from '../selectors/selectors.js';
+import {config} from '../config.js';
+import {
+  getPieceGroupIndex, getNumLiberties,
+  isLegalPlacement,
+} from '../selectors/selectors.js';
 
 export default class GameBoard extends StatefulHTML {
+  endTurnInterval = null;
+
   connectedCallback() {
     const width = parseInt(this.getAttribute("width"));
     const height = parseInt(this.getAttribute("height"));
@@ -16,6 +22,22 @@ export default class GameBoard extends StatefulHTML {
       return;
     }
     this.style.display = "flex";
+
+    // handle action queue
+    if (state.myTurn && state.actionQueue.length > 0) {
+      this.dispatch({type: 'CLEAR_ACTION_QUEUE'});
+      for (const action of state.actionQueue) {
+        this.dispatchToServerAndSelf(action);
+      }
+    }
+
+    // handling ending your turn
+    if (this.endTurnInterval == null && state.myTurn && state.realtime) {
+      this.endTurnInterval = setTimeout(() => {
+        this.endTurnInterval = null;
+        this.dispatchToServerAndSelf({type: 'END_TURN', clientID: state.clientID});
+      }, config.turnTime); // TODO: subtract latency from turnTime?
+    }
 
     this.render(state, this.querySelector("canvas"));
   }
@@ -81,15 +103,28 @@ export default class GameBoard extends StatefulHTML {
       }
     }
 
-    if (!state.myTurn) {
+    if (!state.myTurn && !state.realtime) {
       ctx.fillStyle = "rgba(0,0,0,0.1)";
       ctx.fillRect(0,0,canvas.width,canvas.height);
     }
   }
 
+  // dispatches to the action to self and server if it's my turn,
+  // else just queue's the action to myself
+  dispatchOrQueue(action) {
+    const {myTurn, realtime} = this.getState();
+    if (!myTurn && realtime) {
+      this.dispatch({type: 'QUEUE_ACTION', action});
+    } else {
+      this.dispatchToServerAndSelf(action);
+    }
+  }
+
   canvasClick(ev) {
-    const {width, height, color, myTurn, clientID, socket, pieces} = this.getState();
-    if (!myTurn) return;
+    const {
+      width, height, color, myTurn, clientID, socket, pieces,
+      realtime,
+    } = this.getState();
 
     const canvas = this.querySelector("canvas")
     if (!canvas) return;
@@ -98,11 +133,13 @@ export default class GameBoard extends StatefulHTML {
     const x = Math.round(ev.offsetX / sqSize);
     const y = Math.round(ev.offsetY / sqSize);
 
-    if (x == 0 || x == width || y == 0 || y == height) return; // outside the border
-    if (pieces[encodePos({x, y})]) return; // already occupied
+    if (!isLegalPlacement({width, height, pieces}, {x, y})) return;
 
-    this.dispatchToServerAndSelf({type: 'PLACE_PIECE', x, y, color});
-    this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
+    this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
+
+    if (!realtime) {
+      this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
+    } // else turn end is handled already
   }
 }
 
