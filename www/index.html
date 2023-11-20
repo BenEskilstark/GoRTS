@@ -18,7 +18,17 @@
 
 
       <stateful-client>
-        <ai-player apm=300></ai-player>
+        <ai-player apm=30></ai-player>
+        <game-lobby></game-lobby>
+        <game-board width=20 height=20 color="white">
+          <canvas class="boardCanvas" width=800 height=800
+            onclick="this.closest('game-board').canvasClick(event)"
+          />
+        </game-board>
+      </stateful-client>
+
+      <stateful-client>
+        <ai-player apm=30></ai-player>
         <game-lobby></game-lobby>
         <game-board width=20 height=20 color="white">
           <canvas class="boardCanvas" width=800 height=800

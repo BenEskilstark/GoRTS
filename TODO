@@ -1,7 +1,4 @@
 
-  - Need more succinct way to access dispatch, getState, etc. from within html
-
-  - Add switch for turn-based vs real-time
-    - turn-based ends your turn whenever you place a piece
-    - real-time queues up placements made not on your own turn and then
-      dispatches them if they are legal on your turn
+  - deploy server to droplet
+  - profiling how many games/clients/apm can be supported simultaneously
+  - more interesting game mechanics
