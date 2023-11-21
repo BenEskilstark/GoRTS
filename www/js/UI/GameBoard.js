@@ -10,10 +10,6 @@ export default class GameBoard extends StatefulHTML {
   endTurnInterval = null;
 
   connectedCallback() {
-    const width = parseInt(this.getAttribute("width"));
-    const height = parseInt(this.getAttribute("height"));
-    const color = this.getAttribute("color");
-    this.dispatch({width, height, color, myTurn: color == "black"});
   }
 
   onChange(state) {

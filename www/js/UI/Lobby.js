@@ -22,7 +22,7 @@ const listedGame = (state, sessionID) => {
   const amHost = state.sessionID == sessionID && session.clients[0] == state.clientID;
   return `
     <div class="gameInLobby">
-      ${session.name} Players: ${session.clients.length}
+      ${session.name} Players: ${session.clients.length} / 10
       <button
         style="display: ${state.sessionID ? 'none' : 'inline'}"
         onclick="this.closest('game-lobby').dispatchToServer(${joinAction})"
@@ -35,7 +35,23 @@ const listedGame = (state, sessionID) => {
       >
         Start Game
       </button>
+      <button
+        style="display: ${amHost ? 'inline' : 'none'}"
+        onclick="this.closest('game-lobby').addAIPlayer()"
+      >
+        Add AI Player
+      </button>
     </div>
+  `;
+}
+
+const createGameClient = ({useAI, apm}) => {
+  const aiPlayer = `<ai-player apm=${apm}></ai-player>`;
+  return `
+    <stateful-client>
+      ${useAI ? aiPlayer : ""}
+      <game-board></game-board>
+    </stateful-client>
   `;
 }
 
@@ -62,6 +78,17 @@ export default class Lobby extends StatefulHTML {
 
   createGame() {
     this.dispatchToServer({type: "CREATE_SESSION"});
+  }
+
+  addAIPlayer() {
+    // add the client
+    const container = document.getElementById("container");
+    container.insertAdjacentHTML(
+      'beforeend',
+      createGameClient({useAPI: true, apm: 100}),
+    );
+
+    // have that client join this client's game
   }
 
 }

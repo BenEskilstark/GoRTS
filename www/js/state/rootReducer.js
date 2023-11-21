@@ -1,5 +1,6 @@
 import {placePiece} from '../state/goOperations.js';
 import {isLegalPlacement} from '../selectors/selectors.js';
+import {config} from '../config.js';
 
 export const rootReducer = (state, action) => {
   if (state === undefined) state = initState();
@@ -52,19 +53,29 @@ export const initState = () => {
     sessionID: null, // session I am in
     numConnectedClients: 0,
     clientID: null,
-    realtime: true,
+    realtime: config.isRealtime,
   };
 }
 
-const colors = ['black', 'white', 'steelblue', 'lightgreen'];
+const colors = [
+  'black', 'white', 'steelblue', 'lightgreen', 'pink',
+  'orange', 'red', 'purple', 'blue', 'gray',
+];
 
 export const initGameState = (players, clientID) => {
   return {
     players, // Array<ClientID>
+
     turnIndex: 0, // index of player whose turn it is
     turn: 0,
-    actionQueue: [], // Array<Action>
+
+    myTurn: players.indexOf(clientID) == 0,
     color: colors[players.indexOf(clientID)],
+    actionQueue: [], // Array<Action>
+
+    width: config.boardSize,
+    height: config.boardSize,
+
     pieces: {}, // {EncodedPos: {color, x, y}}
     groups: [], // Array<{color, pieces: Array<EncodedPos>, liberties: Number}>
   };

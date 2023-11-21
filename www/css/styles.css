@@ -28,12 +28,11 @@ game-lobby {
 }
 
 game-board {
-  display: flex;
   justify-content: center;
   align-items: center;
   background-color: tan;
-  width: 450;
-  height: 450;
+  max-width: 450px;
+  max-height: 450px;
   border: 1px solid black;
 }
 
