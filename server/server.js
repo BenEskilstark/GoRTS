@@ -6,7 +6,8 @@ const {Server} = require('socket.io');
 const {
   clientConnect, clientDisconnect, emit,
   createSession, joinSession, startSession, leaveSession,
-} = require('./sessions.js')
+} = require('./sessions.js');
+require('dotenv').config();
 
 const port = process.env.PORT || 8000;
 
@@ -20,7 +21,8 @@ app.use(express.static(path.join(__dirname, '../www')));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:8000",
+    origin: process.env.HOSTNAME + ":" + port,
+    // origin: "http://localhost:8000",
     methods: ["GET", "POST"],
   }
 });

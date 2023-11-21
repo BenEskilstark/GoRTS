@@ -1,6 +1,6 @@
 
 export const setupSocket = (dispatch) => {
-  const socket = io("http://localhost:8000");
+  const socket = io(window.location.hostname);
   socket.on("action", dispatch);
   return socket;
 }
