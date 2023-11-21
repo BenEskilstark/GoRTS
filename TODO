@@ -1,4 +1,4 @@
+  - issue on server with clients not disconnecting on refresh
 
-  - deploy server to droplet
   - profiling how many games/clients/apm can be supported simultaneously
   - more interesting game mechanics
