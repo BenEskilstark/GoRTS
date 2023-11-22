@@ -22,9 +22,9 @@ const listedGame = (state, sessionID) => {
   const amHost = state.sessionID == sessionID && session.clients[0] == state.clientID;
   return `
     <div class="gameInLobby">
-      ${session.name} Players: ${session.clients.length} / 10
+      ${session.name} Players: ${session.clients.length} / 10 ${session.started ? "In Progress" : ""}
       <button
-        style="display: ${state.sessionID ? 'none' : 'inline'}"
+        style="display: ${state.sessionID || session.started ? 'none' : 'inline'}"
         onclick="this.closest('game-lobby').dispatchToServer(${joinAction})"
       >
         Join Game
