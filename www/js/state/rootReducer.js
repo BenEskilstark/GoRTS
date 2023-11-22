@@ -13,6 +13,8 @@ export const rootReducer = (state, action) => {
         turn: state.turn + 1,
         turnIndex,
         myTurn: state.players[turnIndex] == state.clientID,
+        // if I just ended my turn then record the time
+        lastTurnEndTime: state.myTurn ? Date.now() : state.lastTurnEndTime,
       };
     }
     case 'PLACE_PIECE': {
@@ -72,6 +74,7 @@ export const initGameState = (players, clientID) => {
     myTurn: players.indexOf(clientID) == 0,
     color: colors[players.indexOf(clientID)],
     actionQueue: [], // Array<Action>
+    lastTurnEndTime: Date.now(), // the time when my last turn ended
 
     width: config.boardSize,
     height: config.boardSize,

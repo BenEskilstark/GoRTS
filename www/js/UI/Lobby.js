@@ -45,11 +45,10 @@ const listedGame = (state, sessionID) => {
   `;
 }
 
-const createGameClient = ({useAI, apm}) => {
-  const aiPlayer = `<ai-player apm=${apm}></ai-player>`;
+const createAIClient = ({apm, sessionID}) => {
   return `
-    <stateful-client>
-      ${useAI ? aiPlayer : ""}
+    <stateful-client sessionID="${sessionID}">
+      <ai-player apm=${apm}></ai-player>
       <game-board></game-board>
     </stateful-client>
   `;
@@ -81,14 +80,15 @@ export default class Lobby extends StatefulHTML {
   }
 
   addAIPlayer() {
-    // add the client
     const container = document.getElementById("container");
+    const {sessionID} = this.getState();
+
+    // add the client and have it join this one's game
     container.insertAdjacentHTML(
       'beforeend',
-      createGameClient({useAPI: true, apm: 100}),
+      createAIClient({apm: 100, sessionID}),
     );
 
-    // have that client join this client's game
   }
 
 }

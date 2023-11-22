@@ -1,10 +1,9 @@
   - bugs:
     - issue on server with clients not disconnecting on refresh
 
+
   - profiling how many games/clients/apm can be supported simultaneously
-    - allow creating a game and then dynamically adding AI players to it
-    - track how much time has happened between a player's endTurn
-      and start of their next turn (with a running average?)
+    - dispatch action queue as a single action at the start of your turn
 
   - more interesting game mechanics
     - click and drag:

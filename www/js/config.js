@@ -1,5 +1,5 @@
 export const config = {
   isRealtime: true,
-  turnTime: 40, // ms
+  turnTime: 20, // ms
   boardSize: 20,
 };

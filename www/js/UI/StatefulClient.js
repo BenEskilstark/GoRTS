@@ -1,6 +1,6 @@
 import {useReducer} from '../state/store.js';
 import {rootReducer, initState} from '../state/rootReducer.js';
-import {setupSocket} from '../sockets.js';
+import {setupSocket, dispatchToServer} from '../sockets.js';
 
 export default class StatefulClient extends HTMLElement {
   constructor() {
@@ -19,6 +19,12 @@ export default class StatefulClient extends HTMLElement {
     // setup websocket:
     const socket = setupSocket(this.dispatch);
     this.dispatch({socket});
+
+    // can optionally provide a sessionID to join immediately
+    const sessionID = this.getAttribute("sessionID");
+    if (sessionID) {
+      dispatchToServer(socket, {type: 'JOIN_SESSION', sessionID});
+    }
   }
 
   provideStore() {

@@ -8,13 +8,13 @@
     <script type="module" src="js/index.js"></script>
     <div id="container" style="width: 100%; margin: auto">
       <stateful-client>
-        <ai-player apm=100></ai-player>
         <game-lobby></game-lobby>
         <game-board>
           <canvas class="boardCanvas" width=800 height=800
             onclick="this.closest('game-board').canvasClick(event)"
           />
         </game-board>
+        <debug-info></debug-info>
       </stateful-client>
 
     </div>
