@@ -1,5 +1,7 @@
   - bugs:
     - issue on server with clients not disconnecting on refresh
+    - don't allow joining games that are started
+    - seems like it can really only support one game at a time..
 
 
   - profiling how many games/clients/apm can be supported simultaneously
