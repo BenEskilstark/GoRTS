@@ -4,6 +4,14 @@
 
   - bugs:
     - issue on server with clients not disconnecting on refresh
+    - players, pieces, etc. not initialized for some players
+      (socket sending and END_TURN, etc. out of order/before START?)
+
+  - troubleshooting:
+    - check for memory leaks on the server
+    - ~6 clients seems like when it starts to crap out
+    - is turn rate too high and clobbering server -- can this be synced
+      without passing through the server every time?
 
 
   - profiling how many games/clients/apm can be supported simultaneously

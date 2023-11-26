@@ -86,7 +86,7 @@ export default class Lobby extends StatefulHTML {
     // add the client and have it join this one's game
     container.insertAdjacentHTML(
       'beforeend',
-      createAIClient({apm: 100, sessionID}),
+      createAIClient({apm: 10, sessionID}),
     );
 
   }
