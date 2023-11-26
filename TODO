@@ -1,6 +1,7 @@
 
   - playtest:
 
+
   - bugs:
 
 
@@ -8,13 +9,9 @@
     - dispatch action queue as a single action at the start of your turn
       (and always queue actions)
 
+
   - more interesting game mechanics
-    - falling pieces:
-      - state for pieces that are falling (and handling whether another placement
-        there would be legal)
-      - timing for falling pieces to become regular pieces
-      - rendering of falling pieces as increasing-sized circles inside an outline
-        of their final position
+
 
   - scoring:
     - count and display number of pieces lost to being captured (as negative)

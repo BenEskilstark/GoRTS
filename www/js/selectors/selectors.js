@@ -14,7 +14,10 @@ export const forEachBoardPos = (state, fn) => {
 export const getFreePositions = (state) => {
   const freePositions = [];
   forEachBoardPos(state, (pos) => {
-    if (!state.pieces[encodePos(pos)]) {
+    if (
+      !state.pieces[encodePos(pos)] &&
+      !state.fallingPieces[encodePos(pos)]
+    ) {
       freePositions.push(pos);
     }
   });
@@ -55,7 +58,8 @@ export const getNumLiberties = (state, group) => {
 
   let numLiberties = 0;
   for (const encodedPiece of group.pieces) {
-    const neighbors = getNeighborPositions(width, height, decodePos(encodedPiece));
+    const neighbors = getNeighborPositions(
+      width, height, decodePos(encodedPiece));
     numLiberties += neighbors.filter(pos => !state.pieces[encodePos(pos)])
       .length;
   }
@@ -64,12 +68,14 @@ export const getNumLiberties = (state, group) => {
 }
 
 export const isLegalPlacement = (state, position) => {
-  const {width, height, pieces} = state;
+  const {width, height, pieces, fallingPieces} = state;
   const {x, y} = position;
   // outside the border
   if (x == 0 || x == width || y == 0 || y == height) return false;
   // already occupied
   if (pieces[encodePos({x, y})]) return false;
+  // already dropping a piece there
+  if (fallingPieces[encodePos({x, y})]) return false;
 
   return true;
 }

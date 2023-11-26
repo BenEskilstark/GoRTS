@@ -1,6 +1,7 @@
-import {placePiece} from '../state/goOperations.js';
+import {placePiece, dropPiece} from '../state/goOperations.js';
 import {isLegalPlacement, msToTurns} from '../selectors/selectors.js';
 import {config} from '../config.js';
+import {encodePos, decodePos} from '../utils/positions.js';
 
 export const rootReducer = (state, action) => {
   if (state === undefined) state = initState();
@@ -11,7 +12,22 @@ export const rootReducer = (state, action) => {
       const justEndedMyTurn = state.myTurn;
       const justStartedMyTurn = state.players[turnIndex] == state.clientID;
 
-      // update things that happen once per turn:
+      // update falling pieces
+      const nextFallingPieces = {};
+      for (const ePos in state.fallingPieces) {
+        const piece = state.fallingPieces[ePos];
+        piece.turns--;
+        if (piece.turns <= 0) {
+          if (isLegalPlacement(state, action)) {
+            placePiece(state, piece);
+          }
+        } else {
+          nextFallingPieces[ePos] = piece;
+        }
+      }
+      state.fallingPieces = nextFallingPieces;
+
+      // update mana regeneration
       state.nextMana--;
       if (justStartedMyTurn) {
         if (state.nextMana <= 0) {
@@ -31,6 +47,13 @@ export const rootReducer = (state, action) => {
           : state.curTurnRate,
         lastTurnEndTime: justEndedMyTurn ? Date.now() : state.lastTurnEndTime,
       };
+    }
+    case 'DROP_PIECE': {
+      const {x, y, color} = action;
+      if (isLegalPlacement(state, action)) {
+        dropPiece(state, {x, y, color});
+      }
+      return state;
     }
     case 'PLACE_PIECE': {
       const {x, y, color} = action;
@@ -96,6 +119,7 @@ export const initGameState = (players, clientID) => {
     mana: config.startingMana,
     nextMana: 50, // turns until next mana regen
 
+    fallingPieces: {}, // {EncodedPos: {color, x, y, turns}}
     pieces: {}, // {EncodedPos: {color, x, y}}
     groups: [], // Array<{color, pieces: Array<EncodedPos>, liberties: Number}>
   };

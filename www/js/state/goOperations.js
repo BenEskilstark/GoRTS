@@ -1,6 +1,8 @@
 import {
   forEachBoardPos, belongsToGroup, getNumLiberties,
+  msToTurns,
 } from '../selectors/selectors.js';
+import {config} from '../config.js';
 import {encodePos, decodePos} from '../utils/positions.js';
 
 
@@ -10,6 +12,13 @@ export const placePiece = (state, piece) => {
   updateLiberties(state);
   removeDeadGroups(state);
   computeScores(state);
+};
+
+export const dropPiece = (state, piece) => {
+  const turns = msToTurns(state, config.fallingTime);
+  state.fallingPieces[encodePos(piece)] = {
+    ...piece, turns, startTurns: turns,
+  };
 };
 
 

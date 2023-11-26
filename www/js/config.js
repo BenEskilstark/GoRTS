@@ -9,6 +9,8 @@ export const config = {
 
   startingMana: 12,
   maxMana: 12,
-  manaRegenRate: 2000, // ms
+  manaRegenRate: 1500, // ms
+
+  fallingTime: 2000, // ms that a piece spends falling before it's placed
 
 };

@@ -47,7 +47,7 @@ export default class AIPlayer extends StatefulHTML {
 
       if (mana > 0) {
         this.dispatch({mana: mana - 1});
-        this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
+        this.dispatchOrQueue({type: 'DROP_PIECE', x, y, color});
       }
       if (!realtime) {
         this.dispatchToServerAndSelf({type: 'END_TURN', clientID});

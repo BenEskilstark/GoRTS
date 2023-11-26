@@ -69,6 +69,21 @@ export default class GameBoard extends StatefulHTML {
       }
     }
 
+    for (const p in state.fallingPieces) {
+      const {x, y, color, turns, startTurns} = state.fallingPieces[p];
+      ctx.strokeStyle = color;
+      ctx.beginPath();
+      ctx.arc(x * sqSize, y * sqSize, sqSize / 2 - 3, 0, Math.PI * 2);
+      ctx.stroke();
+
+      const maxRadius = sqSize / 2 - 3;
+      const radius = (startTurns - turns) / startTurns * maxRadius;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x * sqSize, y * sqSize, radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
     for (const p in state.pieces) {
       const {x, y, color} = state.pieces[p];
       ctx.fillStyle = color;
@@ -110,10 +125,11 @@ export default class GameBoard extends StatefulHTML {
   }
 
   canvasClick(ev) {
+    const state = this.getState();
     const {
       width, height, color, myTurn, clientID, socket, pieces,
       realtime, mana,
-    } = this.getState();
+    } = state;
 
     const canvas = this.querySelector("canvas")
     if (!canvas) return;
@@ -122,11 +138,11 @@ export default class GameBoard extends StatefulHTML {
     const x = Math.round(ev.offsetX / sqSize);
     const y = Math.round(ev.offsetY / sqSize);
 
-    if (!isLegalPlacement({width, height, pieces}, {x, y})) return;
+    if (!isLegalPlacement(state, {x, y})) return;
     if (mana <= 0) return;
 
     this.dispatch({mana: mana - 1});
-    this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
+    this.dispatchOrQueue({type: 'DROP_PIECE', x, y, color});
 
     if (!realtime) {
       this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
@@ -142,17 +158,18 @@ export default class GameBoard extends StatefulHTML {
   }
 
   canvasMouseMove(ev) {
-    const {mouseDown, width, height, color, pieces, mana} = this.getState();
+    const state = this.getState();
+    const {mouseDown, width, height, color, pieces, mana} = state;
 
     if (!mouseDown) return;
 
-    const {x, y} = mouseToGrid({width, height}, ev, this.querySelector("canvas"));
+    const {x, y} = mouseToGrid(state, ev, this.querySelector("canvas"));
 
-    if (!isLegalPlacement({width, height, pieces}, {x, y})) return;
+    if (!isLegalPlacement(state, {x, y})) return;
     if (mana <= 0) return;
 
     this.dispatch({mana: mana - 1});
-    this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
+    this.dispatchOrQueue({type: 'DROP_PIECE', x, y, color});
   }
 }
 
