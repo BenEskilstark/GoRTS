@@ -1,4 +1,5 @@
 import {encodePos, decodePos} from '../utils/positions.js';
+import {config} from '../config.js';
 
 
 export const forEachBoardPos = (state, fn) => {
@@ -86,4 +87,29 @@ export const getPieceGroupIndex = (state, piece) => {
   }
   console.log("piece not in a group!", piece);
   return -1;
+}
+
+export const getColorByClientID = ({players, clientID}) => {
+  return config.colors[players.indexOf(clientID)];
+}
+
+export const getTurnRate = (state) => {
+  const ms = Date.now() - state.lastTurnEndTime;
+  return (1000 / ms) * state.players.length;
+}
+
+// convert a duration in millis to a number of turns based on the most recent
+// turn rate
+export const msToTurns = ({curTurnRate}, duration) => {
+  return duration / 1000 * curTurnRate;
+}
+
+export const mouseToGrid = ({width, height}, ev, canvas) => {
+  if (!canvas) return;
+  const sqSize = canvas.getBoundingClientRect().width / width;
+
+  return {
+    x: Math.round(ev.offsetX / sqSize),
+    y: Math.round(ev.offsetY / sqSize),
+  };
 }

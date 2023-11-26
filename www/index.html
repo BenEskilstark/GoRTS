@@ -8,13 +8,19 @@
     <script type="module" src="js/index.js"></script>
     <div id="container" style="width: 100%; margin: auto">
       <stateful-client>
-        <game-lobby></game-lobby>
-        <game-board>
-          <canvas class="boardCanvas" width=800 height=800
-            onclick="this.closest('game-board').canvasClick(event)"
-          />
-        </game-board>
-        <debug-info></debug-info>
+        <screen-router initial="LOBBY">
+          <game-lobby screen="LOBBY" display="flex"></game-lobby>
+          <game-board screen="GAME" display="flex">
+            <canvas class="boardCanvas" width=800 height=800
+              onclick="this.closest('game-board').canvasClick(event)"
+              onmousemove="this.closest('game-board').canvasMouseMove(event)"
+              onmousedown="this.closest('game-board').canvasMouseDown(event)"
+              onmouseup="this.closest('game-board').canvasMouseUp(event)"
+            />
+          </game-board>
+          <mana-info screen="GAME" display="block"></mana-info>
+          <debug-info screen="GAME" display="block"></debug-info>
+        </screen-router>
       </stateful-client>
 
     </div>

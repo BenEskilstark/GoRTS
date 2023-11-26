@@ -3,22 +3,15 @@ import {encodePos} from '../utils/positions.js';
 import {config} from '../config.js';
 import {
   getPieceGroupIndex, getNumLiberties,
-  isLegalPlacement,
+  isLegalPlacement, mouseToGrid,
 } from '../selectors/selectors.js';
 
 export default class GameBoard extends StatefulHTML {
   endTurnInterval = null;
 
-  connectedCallback() {
-  }
+  connectedCallback() {}
 
   onChange(state) {
-    if (state.screen != "GAME") {
-      this.style.display = "none";
-      return;
-    }
-    this.style.display = "flex";
-
     // handle action queue
     if (state.myTurn && state.actionQueue.length > 0) {
       this.dispatch({type: 'CLEAR_ACTION_QUEUE'});
@@ -105,8 +98,8 @@ export default class GameBoard extends StatefulHTML {
     }
   }
 
-  // dispatches to the action to self and server if it's my turn,
-  // else just queue's the action to myself
+  // dispatches the action to self and server if it's my turn,
+  // else just queues the action to myself
   dispatchOrQueue(action) {
     const {myTurn, realtime} = this.getState();
     if (!myTurn && realtime) {
@@ -119,7 +112,7 @@ export default class GameBoard extends StatefulHTML {
   canvasClick(ev) {
     const {
       width, height, color, myTurn, clientID, socket, pieces,
-      realtime,
+      realtime, mana,
     } = this.getState();
 
     const canvas = this.querySelector("canvas")
@@ -130,12 +123,36 @@ export default class GameBoard extends StatefulHTML {
     const y = Math.round(ev.offsetY / sqSize);
 
     if (!isLegalPlacement({width, height, pieces}, {x, y})) return;
+    if (mana <= 0) return;
 
+    this.dispatch({mana: mana - 1});
     this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
 
     if (!realtime) {
       this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
     } // else turn end is handled already
+  }
+
+  canvasMouseDown(ev) {
+    this.dispatch({mouseDown: true});
+  }
+
+  canvasMouseUp(ev) {
+    this.dispatch({mouseDown: false});
+  }
+
+  canvasMouseMove(ev) {
+    const {mouseDown, width, height, color, pieces, mana} = this.getState();
+
+    if (!mouseDown) return;
+
+    const {x, y} = mouseToGrid({width, height}, ev, this.querySelector("canvas"));
+
+    if (!isLegalPlacement({width, height, pieces}, {x, y})) return;
+    if (mana <= 0) return;
+
+    this.dispatch({mana: mana - 1});
+    this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
   }
 }
 

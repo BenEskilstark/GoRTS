@@ -61,12 +61,6 @@ export default class Lobby extends StatefulHTML {
   }
 
   onChange(state) {
-    if (state.screen != "LOBBY") {
-      this.style.display = "none";
-      return;
-    }
-    this.style.display = "flex";
-
     const games = [];
     for (const sessionID in state.sessions) {
       games.push(listedGame(state, sessionID));
@@ -86,7 +80,7 @@ export default class Lobby extends StatefulHTML {
     // add the client and have it join this one's game
     container.insertAdjacentHTML(
       'beforeend',
-      createAIClient({apm: 10, sessionID}),
+      createAIClient({apm: 70, sessionID}),
     );
 
   }

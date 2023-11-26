@@ -1,40 +1,20 @@
-  - simplewww:
-    - add a view-router tag that handles which of its children to display
-      at a time based on screen state (or add this to stateful-client?)
+
+  - playtest:
 
   - bugs:
-    - issue on server with clients not disconnecting on refresh
-    - players, pieces, etc. not initialized for some players
-      (socket sending and END_TURN, etc. out of order/before START?)
-
-  - troubleshooting:
-    - check for memory leaks on the server
-    - ~6 clients seems like when it starts to crap out
-    - is turn rate too high and clobbering server -- can this be synced
-      without passing through the server every time?
 
 
   - profiling how many games/clients/apm can be supported simultaneously
     - dispatch action queue as a single action at the start of your turn
-    - confirm whether this is just unfocused browser windows losing the
-      socket connection
-    - perhaps try having the server set the timer
-    - also try deploying to NY server instead of SF
+      (and always queue actions)
 
   - more interesting game mechanics
-    - click and drag:
-      - refactor to move click handling of the canvas inside GameBoard class
     - falling pieces:
       - state for pieces that are falling (and handling whether another placement
         there would be legal)
       - timing for falling pieces to become regular pieces
       - rendering of falling pieces as increasing-sized circles inside an outline
         of their final position
-    - mana:
-      - state for how many pieces available to place, and you don't place them if
-        there is no mana for it
-      - rate that mana is added (could be interested if there is none)
-      - display mana somewhere (along the bottom?)
 
   - scoring:
     - count and display number of pieces lost to being captured (as negative)

@@ -1,5 +1,5 @@
 import {placePiece} from '../state/goOperations.js';
-import {isLegalPlacement} from '../selectors/selectors.js';
+import {isLegalPlacement, msToTurns} from '../selectors/selectors.js';
 import {config} from '../config.js';
 
 export const rootReducer = (state, action) => {
@@ -8,13 +8,28 @@ export const rootReducer = (state, action) => {
   switch (action.type) {
     case 'END_TURN': {
       const turnIndex = (state.turnIndex + 1) % state.players.length;
+      const justEndedMyTurn = state.myTurn;
+      const justStartedMyTurn = state.players[turnIndex] == state.clientID;
+
+      // update things that happen once per turn:
+      state.nextMana--;
+      if (justStartedMyTurn) {
+        if (state.nextMana <= 0) {
+          state.mana = Math.min(state.mana + 1, config.maxMana);
+          state.nextMana = msToTurns(state, config.manaRegenRate);
+        }
+      }
+
       return {
         ...state,
         turn: state.turn + 1,
+        myTurn: justStartedMyTurn,
         turnIndex,
-        myTurn: state.players[turnIndex] == state.clientID,
         // if I just ended my turn then record the time
-        lastTurnEndTime: state.myTurn ? Date.now() : state.lastTurnEndTime,
+        curTurnRate: justEndedMyTurn
+          ? 1000 / (Date.now() - state.lastTurnEndTime + 1) * state.players.length
+          : state.curTurnRate,
+        lastTurnEndTime: justEndedMyTurn ? Date.now() : state.lastTurnEndTime,
       };
     }
     case 'PLACE_PIECE': {
@@ -59,25 +74,27 @@ export const initState = () => {
   };
 }
 
-const colors = [
-  'black', 'white', 'steelblue', 'lightgreen', 'pink',
-  'orange', 'red', 'purple', 'blue', 'gray',
-];
-
 export const initGameState = (players, clientID) => {
   return {
     players, // Array<ClientID>
 
+    width: config.boardSize,
+    height: config.boardSize,
+
     turnIndex: 0, // index of player whose turn it is
     turn: 0,
 
+    mouseDown: false,
+
     myTurn: players.indexOf(clientID) == 0,
-    color: colors[players.indexOf(clientID)],
+    color: config.colors[players.indexOf(clientID)],
     actionQueue: [], // Array<Action>
+
+    curTurnRate: 24, // total number of turns taken per second
     lastTurnEndTime: Date.now(), // the time when my last turn ended
 
-    width: config.boardSize,
-    height: config.boardSize,
+    mana: config.startingMana,
+    nextMana: 50, // turns until next mana regen
 
     pieces: {}, // {EncodedPos: {color, x, y}}
     groups: [], // Array<{color, pieces: Array<EncodedPos>, liberties: Number}>

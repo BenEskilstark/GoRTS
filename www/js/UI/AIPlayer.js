@@ -37,12 +37,18 @@ export default class AIPlayer extends StatefulHTML {
     this.playInterval = setInterval(() => {
       const state = this.getState();
       if (state.screen != "GAME" ) return;
-      const {color, clientID, socket, width, height, realtime, myTurn} = state;
+      const {
+        color, clientID, socket, width, height, realtime, myTurn,
+        mana,
+      } = state;
       if (!realtime && !myTurn) return;
 
       const {x, y} = oneOf(getFreePositions(state));
 
-      this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
+      if (mana > 0) {
+        this.dispatch({mana: mana - 1});
+        this.dispatchOrQueue({type: 'PLACE_PIECE', x, y, color});
+      }
       if (!realtime) {
         this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
       } // else turn end is handled already
