@@ -3,6 +3,11 @@
 
 
   - bugs:
+    - DROP_PIECE must provide its number of turns on dispatch
+
+
+  - open issues:
+    - turn rate timing is too noisy -- use a running average?
 
 
   - profiling how many games/clients/apm can be supported simultaneously
