@@ -4,6 +4,7 @@ import {config} from '../config.js';
 import {
   getPieceGroupIndex, getNumLiberties,
   isLegalPlacement, mouseToGrid,
+  msToTurns,
 } from '../selectors/selectors.js';
 
 export default class GameBoard extends StatefulHTML {
@@ -30,6 +31,10 @@ export default class GameBoard extends StatefulHTML {
 
     this.render(state, this.querySelector("canvas"));
   }
+
+  //////////////////////////////////////////////////////////////////
+  // Rendering
+  //////////////////////////////////////////////////////////////////
 
   render(state, canvas) {
     if (!canvas) return;
@@ -113,36 +118,14 @@ export default class GameBoard extends StatefulHTML {
     }
   }
 
-  // dispatches the action to self and server if it's my turn,
-  // else just queues the action to myself
-  dispatchOrQueue(action) {
-    const {myTurn, realtime} = this.getState();
-    if (!myTurn && realtime) {
-      this.dispatch({type: 'QUEUE_ACTION', action});
-    } else {
-      this.dispatchToServerAndSelf(action);
-    }
-  }
+
+  //////////////////////////////////////////////////////////////////
+  // Click Handling
+  //////////////////////////////////////////////////////////////////
 
   canvasClick(ev) {
-    const state = this.getState();
-    const {
-      width, height, color, myTurn, clientID, socket, pieces,
-      realtime, mana,
-    } = state;
-
-    const canvas = this.querySelector("canvas")
-    if (!canvas) return;
-    const sqSize = canvas.getBoundingClientRect().width / width;
-
-    const x = Math.round(ev.offsetX / sqSize);
-    const y = Math.round(ev.offsetY / sqSize);
-
-    if (!isLegalPlacement(state, {x, y})) return;
-    if (mana <= 0) return;
-
-    this.dispatch({mana: mana - 1});
-    this.dispatchOrQueue({type: 'DROP_PIECE', x, y, color});
+    const {realtime, clientID} = this.getState();
+    this.placePiece(ev);
 
     if (!realtime) {
       this.dispatchToServerAndSelf({type: 'END_TURN', clientID});
@@ -158,19 +141,24 @@ export default class GameBoard extends StatefulHTML {
   }
 
   canvasMouseMove(ev) {
-    const state = this.getState();
-    const {mouseDown, width, height, color, pieces, mana} = state;
+    if (!this.getState().mouseDown) return;
+    this.placePiece(ev);
+  }
 
-    if (!mouseDown) return;
+  placePiece(ev) {
+    const state = this.getState();
+    const {width, height, color, pieces, mana} = state;
 
     const {x, y} = mouseToGrid(state, ev, this.querySelector("canvas"));
 
-    if (!isLegalPlacement(state, {x, y})) return;
+    if (!isLegalPlacement(state, {x, y, color})) return;
     if (mana <= 0) return;
+    const turns = msToTurns(state, config.fallingTime);
 
+    this.dispatchOrQueue({type: 'DROP_PIECE', x, y, color, turns});
     this.dispatch({mana: mana - 1});
-    this.dispatchOrQueue({type: 'DROP_PIECE', x, y, color});
   }
+
 }
 
 

@@ -1,19 +1,19 @@
 
   - playtest:
     - can drag around the same spot and lose mana without placing more pieces
+      - because we subtract mana before dropping the piece?
+    - tabbing away pauses the socket and messes with avg TR
 
 
   - bugs:
-    - DROP_PIECE must provide its number of turns on dispatch
 
 
   - open issues:
-    - turn rate timing is too noisy -- use a running average?
+    - each client should be tracking all game state precisely
 
 
   - profiling how many games/clients/apm can be supported simultaneously
     - dispatch action queue as a single action at the start of your turn
-      (and always queue actions)
 
 
   - more interesting game mechanics

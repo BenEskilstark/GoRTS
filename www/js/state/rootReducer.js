@@ -18,9 +18,7 @@ export const rootReducer = (state, action) => {
         const piece = state.fallingPieces[ePos];
         piece.turns--;
         if (piece.turns <= 0) {
-          if (isLegalPlacement(state, action)) {
-            placePiece(state, piece);
-          }
+          placePiece(state, piece);
         } else {
           nextFallingPieces[ePos] = piece;
         }
@@ -45,13 +43,14 @@ export const rootReducer = (state, action) => {
         curTurnRate: justEndedMyTurn
           ? 1000 / (Date.now() - state.lastTurnEndTime + 1) * state.players.length
           : state.curTurnRate,
+        avgTurnRate: 1000 / ((Date.now() - state.startTime + 1) / state.turn),
         lastTurnEndTime: justEndedMyTurn ? Date.now() : state.lastTurnEndTime,
       };
     }
     case 'DROP_PIECE': {
-      const {x, y, color} = action;
+      const {x, y, color, turns} = action;
       if (isLegalPlacement(state, action)) {
-        dropPiece(state, {x, y, color});
+        dropPiece(state, {x, y, color, turns});
       }
       return state;
     }
@@ -79,7 +78,11 @@ export const rootReducer = (state, action) => {
     }
     case 'START_SESSION': { // your session is starting
       const session = state.sessions[state.sessionID];
-      return {...state, screen: 'GAME', ...initGameState(session.clients, state.clientID)};
+      return {
+        ...state,
+        screen: 'GAME',
+        ...initGameState(session.clients, state.clientID),
+      };
     }
     default:
       return state;
@@ -114,6 +117,8 @@ export const initGameState = (players, clientID) => {
     actionQueue: [], // Array<Action>
 
     curTurnRate: 24, // total number of turns taken per second
+    avgTurnRate: 24,
+    startTime: Date.now(),
     lastTurnEndTime: Date.now(), // the time when my last turn ended
 
     mana: config.startingMana,

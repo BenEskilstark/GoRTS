@@ -15,9 +15,8 @@ export const placePiece = (state, piece) => {
 };
 
 export const dropPiece = (state, piece) => {
-  const turns = msToTurns(state, config.fallingTime);
   state.fallingPieces[encodePos(piece)] = {
-    ...piece, turns, startTurns: turns,
+    ...piece, startTurns: piece.turns,
   };
 };
 

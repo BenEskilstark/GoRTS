@@ -67,15 +67,20 @@ export const getNumLiberties = (state, group) => {
   return numLiberties;
 }
 
-export const isLegalPlacement = (state, position) => {
-  const {width, height, pieces, fallingPieces} = state;
-  const {x, y} = position;
+export const isLegalPlacement = (state, piece) => {
+  const {width, height, pieces, fallingPieces, actionQueue} = state;
+  const {x, y, color} = piece;
   // outside the border
   if (x == 0 || x == width || y == 0 || y == height) return false;
   // already occupied
   if (pieces[encodePos({x, y})]) return false;
   // already dropping a piece there
   if (fallingPieces[encodePos({x, y})]) return false;
+
+  // already enqueued and action to place a piece there
+  const e = encodePos;
+  if (actionQueue.find(a => pieces[e(a)] || fallingPieces[e(a)])?.color == color)
+    return false;
 
   return true;
 }
@@ -106,8 +111,8 @@ export const getTurnRate = (state) => {
 
 // convert a duration in millis to a number of turns based on the most recent
 // turn rate
-export const msToTurns = ({curTurnRate}, duration) => {
-  return duration / 1000 * curTurnRate;
+export const msToTurns = ({avgTurnRate}, duration) => {
+  return duration / 1000 * avgTurnRate;
 }
 
 export const mouseToGrid = ({width, height}, ev, canvas) => {
