@@ -9,7 +9,18 @@
     <div id="container" style="width: 100%; margin: auto">
       <stateful-client>
         <screen-router initial="LOBBY">
-          <game-lobby screen="LOBBY" display="flex"></game-lobby>
+          <game-lobby screen="LOBBY" display="flex">
+            <h2>Realtime Go</h2>
+            <div>
+              <button onclick="this.closest('game-lobby').createGame()">
+                Create New Game
+              </button>
+            </div>
+            <div class="gameList">
+              <!-- Current games are listed here -->
+            </div>
+          </game-lobby>
+
           <game-board screen="GAME" display="flex">
             <canvas class="boardCanvas" width=800 height=800
               onclick="this.closest('game-board').canvasClick(event)"

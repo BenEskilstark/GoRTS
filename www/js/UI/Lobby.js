@@ -1,17 +1,5 @@
 import StatefulHTML from './StatefulHTML.js';
 
-const lobbyContent = `
-  <h2>Realtime Go</h2>
-  <div>
-    <button onclick="this.closest('game-lobby').createGame()">
-      Create New Game
-    </button>
-  </div>
-  <div class="gameList">
-
-  </div>
-`;
-
 const listedGame = (state, sessionID) => {
   const {sessions} = state;
   const session = sessions[sessionID];
@@ -56,9 +44,7 @@ const createAIClient = ({apm, sessionID}) => {
 
 
 export default class Lobby extends StatefulHTML {
-  connectedCallback() {
-    this.innerHTML = lobbyContent;
-  }
+  connectedCallback() {}
 
   onChange(state) {
     const games = [];

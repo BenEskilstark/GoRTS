@@ -7,10 +7,17 @@
 
   - open issues:
     - dispatch action queue as a single action at the start of your turn
+      - refactor reducers into separate ones
       - or actually just attach action queue to the END_TURN action
+
     - should be storing clientID on the pieces instead of bouncing off of color
+      - clientID should be the thing and not color at all.
+
     - durations should be the turn that the event ends, not the duration
       because you can be off-by-one depending on when you receive that action
+      - is there a way to encapsulate a duration into a class or something
+        that takes care of itself?
+
     - tabbing away pauses the socket and messes with avg TR
       -  could have a timeout where the server ends your turn for you
 
