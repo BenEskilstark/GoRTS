@@ -7,11 +7,12 @@
 
   - open issues:
     - dispatch action queue as a single action at the start of your turn
+      - or actually just attach action queue to the END_TURN action
     - should be storing clientID on the pieces instead of bouncing off of color
-    - tabbing away pauses the socket and messes with avg TR
-      -  could have a timeout where the server ends your turn for you
     - durations should be the turn that the event ends, not the duration
       because you can be off-by-one depending on when you receive that action
+    - tabbing away pauses the socket and messes with avg TR
+      -  could have a timeout where the server ends your turn for you
 
 
   - alternate server models:
@@ -32,11 +33,16 @@
       - this could allow switching to a server model by dispatching actions to
         server, END_TURN going empty, and then the server sending serialized
         state when it sends END_TURN
+      - (de)serialization doesn't scale well...
 
 
   - more interesting game mechanics:
 
 
   - scoring:
+    - just fill the entire board (except for eyes) and use sum of pieces
+      when the game is obviously over?
+      - could have a timeout where game is ended and scored if no one does
+        anything for X turns
     - use floodfill algorithm on empty squares to count them up
       - how to handle ambiguous areas?
