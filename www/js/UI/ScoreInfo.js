@@ -1,5 +1,6 @@
 import StatefulHTML from './StatefulHTML.js';
 import {config} from '../config.js';
+import {getNumPiecesByClientID} from '../selectors/goSelectors.js';
 
 export default class ScoreInfo extends StatefulHTML {
 
@@ -11,12 +12,7 @@ export default class ScoreInfo extends StatefulHTML {
       const clientID = state.players[i];
       const score = state.score[clientID];
       const lost = state.lost[clientID];
-      let placed = 0;
-      for (const ePos in state.pieces) {
-        if (state.colors[state.pieces[ePos].color] == clientID) {
-          placed++;
-        }
-      }
+      const placed = getNumPiecesByClientID(state, clientID);
       const color = config.colors[i];
 
       let scoreStr = `${placed} - ${lost} = <b>${score}</b>`;

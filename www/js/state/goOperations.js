@@ -1,7 +1,7 @@
 import {
   forEachBoardPos, belongsToGroup, getNumLiberties,
-  msToTurns,
-} from '../selectors/selectors.js';
+  getNumPiecesByClientID,
+} from '../selectors/goSelectors.js';
 import {config} from '../config.js';
 import {encodePos, decodePos} from '../utils/positions.js';
 
@@ -40,8 +40,8 @@ const removeDeadGroups = (state) => {
 
   for (const group of deadGroups) {
     for (const encodedPiece of group.pieces) {
-      const {color} = state.pieces[encodedPiece];
-      state.lost[state.colors[color]]++;
+      const {clientID} = state.pieces[encodedPiece];
+      state.lost[clientID]++;
       delete state.pieces[encodedPiece];
     }
   }
@@ -51,19 +51,14 @@ const removeDeadGroups = (state) => {
 
 const computeScores = (state) => {
   for (const clientID in state.score) {
-    let numPieces = 0;
-    for (const ePos in state.pieces) {
-      if (state.colors[state.pieces[ePos].color] == clientID) {
-        numPieces++;
-      }
-    }
+    const numPieces = getNumPiecesByClientID(state, clientID);
     state.score[clientID] = numPieces - state.lost[clientID];
   }
 };
 
 const computeGroupBelonging = (state, piece) => {
   const {groups} = state;
-  const {x, y, color} = piece;
+  const {x, y, clientID} = piece;
   const groupsJoined = [];
   const nextGroups = [];
   for (const group of groups) {
@@ -75,7 +70,7 @@ const computeGroupBelonging = (state, piece) => {
   }
   state.groups = nextGroups;
   if (groupsJoined.length == 0) {
-    state.groups.push({color, pieces: [encodePos(piece)], liberties: 1});
+    state.groups.push({clientID, pieces: [encodePos(piece)], liberties: 1});
   } else {
     const group = mergeGroups(state, groupsJoined);
     group.pieces.push(encodePos(piece));
@@ -84,7 +79,7 @@ const computeGroupBelonging = (state, piece) => {
 }
 
 const mergeGroups = (state, groups) => {
-  const mergedGroup = {color: groups[0].color, pieces: [], liberties: 1};
+  const mergedGroup = {clientID: groups[0].clientID, pieces: [], liberties: 1};
   for (const group of groups) {
     mergedGroup.pieces = mergedGroup.pieces.concat(group.pieces);
   }

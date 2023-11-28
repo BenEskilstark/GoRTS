@@ -44,7 +44,7 @@ const getNeighborPositions = (width, height, piece) => {
 }
 
 export const belongsToGroup = (group, piece) => {
-  if (group.color != piece.color) return false;
+  if (group.clientID != piece.clientID) return false;
   for (const encodedPiece of group.pieces) {
     if (areNeighbors(decodePos(encodedPiece), piece)) {
       return true;
@@ -69,7 +69,7 @@ export const getNumLiberties = (state, group) => {
 
 export const isLegalPlacement = (state, piece) => {
   const {width, height, pieces, fallingPieces, actionQueue} = state;
-  const {x, y, color} = piece;
+  const {x, y, clientID} = piece;
   // outside the border
   if (x == 0 || x == width || y == 0 || y == height) return false;
   // already occupied
@@ -79,11 +79,21 @@ export const isLegalPlacement = (state, piece) => {
 
   // already enqueued an action to place a piece there
   const e = encodePos;
-  if (actionQueue.find(a => pieces[e(a)] || fallingPieces[e(a)])?.color == color)
+  if (actionQueue.find(a => pieces[e(a)] || fallingPieces[e(a)])?.clientID == clientID)
     return false;
 
   return true;
 }
+
+export const getNumPiecesByClientID = (state, clientID) => {
+  let numPieces = 0;
+  for (const ePos in state.pieces) {
+    if (state.pieces[ePos].clientID == clientID) {
+      numPieces++;
+    }
+  }
+  return numPieces;
+};
 
 
 // for debugging
@@ -100,23 +110,3 @@ export const getPieceGroupIndex = (state, piece) => {
   return -1;
 }
 
-export const getTurnRate = (state) => {
-  const ms = Date.now() - state.lastTurnEndTime;
-  return (1000 / ms) * state.players.length;
-}
-
-// convert a duration in millis to a number of turns based on the most recent
-// turn rate
-export const msToTurns = ({avgTurnRate}, duration) => {
-  return duration / 1000 * avgTurnRate;
-}
-
-export const mouseToGrid = ({width, height}, ev, canvas) => {
-  if (!canvas) return;
-  const sqSize = canvas.getBoundingClientRect().width / width;
-
-  return {
-    x: Math.round(ev.offsetX / sqSize),
-    y: Math.round(ev.offsetY / sqSize),
-  };
-}

@@ -1,5 +1,5 @@
 import StatefulHTML from './StatefulHTML.js';
-import {getFreePositions, msToTurns} from '../selectors/selectors.js';
+import {getFreePositions} from '../selectors/goSelectors.js';
 import {oneOf, randomIn, normalIn, weightedOneOf} from '../utils/stochastic.js';
 import {config} from '../config.js';
 import {dropPiece} from '../thunks/thunks.js';
@@ -27,11 +27,11 @@ export default class AIPlayer extends StatefulHTML {
     this.playInterval = setInterval(() => {
       const state = this.getState();
       if (state.screen != "GAME" ) return;
-      const {color, clientID, realtime, myTurn} = state;
+      const {clientID, realtime, myTurn} = state;
       if (!realtime && !myTurn) return;
 
       const {x, y} = oneOf(getFreePositions(state));
-      dropPiece(this, {x, y, color});
+      dropPiece(this, {x, y, clientID});
 
       if (!realtime) {
         this.dispatchToServerAndSelf({type: 'END_TURN', clientID});

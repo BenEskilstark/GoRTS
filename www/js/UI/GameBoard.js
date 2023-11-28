@@ -3,9 +3,8 @@ import {encodePos} from '../utils/positions.js';
 import {config} from '../config.js';
 import {
   getPieceGroupIndex, getNumLiberties,
-  isLegalPlacement, mouseToGrid,
-  msToTurns,
-} from '../selectors/selectors.js';
+} from '../selectors/goSelectors.js';
+import {mouseToGrid} from '../selectors/mouseSelectors.js';
 import {dropPiece} from '../thunks/thunks.js';
 
 export default class GameBoard extends StatefulHTML {
@@ -15,19 +14,22 @@ export default class GameBoard extends StatefulHTML {
 
   onChange(state) {
     // handle action queue
-    if (state.myTurn && state.actionQueue.length > 0) {
-      this.dispatch({type: 'CLEAR_ACTION_QUEUE'});
-      for (const action of state.actionQueue) {
-        this.dispatchToServerAndSelf(action);
-      }
-    }
+    // if (state.myTurn && state.actionQueue.length > 0) {
+    //   this.dispatch({type: 'CLEAR_ACTION_QUEUE'});
+    //   for (const action of state.actionQueue) {
+    //     this.dispatchToServerAndSelf(action);
+    //   }
+    // }
 
     // handling ending your turn
     if (this.endTurnInterval == null && state.myTurn && state.realtime) {
       this.endTurnInterval = setTimeout(() => {
         this.endTurnInterval = null;
-        this.dispatchToServerAndSelf({type: 'END_TURN', clientID: state.clientID});
-      }, config.turnTime); // TODO: subtract latency from turnTime?
+        const actions = [...this.getState().actionQueue];
+        this.dispatchToServerAndSelf({
+          type: 'END_TURN', clientID: state.clientID, actions,
+        });
+      }, config.turnTime);
     }
 
     this.render(state, this.querySelector("canvas"));
@@ -76,7 +78,8 @@ export default class GameBoard extends StatefulHTML {
     }
 
     for (const p in state.fallingPieces) {
-      const {x, y, color, turns, startTurns} = state.fallingPieces[p];
+      const {x, y, clientID, turns, startTurns} = state.fallingPieces[p];
+      const color = state.colors[clientID];
       ctx.strokeStyle = color;
       ctx.beginPath();
       ctx.arc(x * sqSize, y * sqSize, sqSize / 2 - 3, 0, Math.PI * 2);
@@ -91,7 +94,8 @@ export default class GameBoard extends StatefulHTML {
     }
 
     for (const p in state.pieces) {
-      const {x, y, color} = state.pieces[p];
+      const {x, y, clientID} = state.pieces[p];
+      const color = state.colors[clientID];
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(x * sqSize, y * sqSize, sqSize / 2 - 3, 0, Math.PI * 2);
@@ -149,7 +153,7 @@ export default class GameBoard extends StatefulHTML {
   placePiece(ev) {
     const state = this.getState();
     const {x, y} = mouseToGrid(state, ev, this.querySelector("canvas"));
-    dropPiece(this, {x, y, color: state.color});
+    dropPiece(this, {x, y, clientID: state.clientID});
   }
 
 }
