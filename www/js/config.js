@@ -1,6 +1,6 @@
 export const config = {
   isRealtime: true,
-  turnTime: 40, // ms
+  turnTime: 0, // ms
   boardSize: 20,
   colors: [
     'black', 'white', 'steelblue', 'lightgreen', 'pink',
