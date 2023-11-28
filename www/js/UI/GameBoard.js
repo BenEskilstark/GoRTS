@@ -6,6 +6,7 @@ import {
   isLegalPlacement, mouseToGrid,
   msToTurns,
 } from '../selectors/selectors.js';
+import {dropPiece} from '../thunks/thunks.js';
 
 export default class GameBoard extends StatefulHTML {
   endTurnInterval = null;
@@ -147,16 +148,8 @@ export default class GameBoard extends StatefulHTML {
 
   placePiece(ev) {
     const state = this.getState();
-    const {width, height, color, pieces, mana} = state;
-
     const {x, y} = mouseToGrid(state, ev, this.querySelector("canvas"));
-
-    if (!isLegalPlacement(state, {x, y, color})) return;
-    if (mana <= 0) return;
-    const turns = msToTurns(state, config.fallingTime);
-
-    this.dispatchOrQueue({type: 'DROP_PIECE', x, y, color, turns});
-    this.dispatch({mana: mana - 1});
+    dropPiece(this, {x, y, color: state.color});
   }
 
 }

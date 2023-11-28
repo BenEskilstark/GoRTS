@@ -2,6 +2,7 @@ import {placePiece, dropPiece} from '../state/goOperations.js';
 import {isLegalPlacement, msToTurns} from '../selectors/selectors.js';
 import {config} from '../config.js';
 import {encodePos, decodePos} from '../utils/positions.js';
+import {arrayToMapKeys} from '../utils/helpers.js';
 
 export const rootReducer = (state, action) => {
   if (state === undefined) state = initState();
@@ -26,11 +27,11 @@ export const rootReducer = (state, action) => {
       state.fallingPieces = nextFallingPieces;
 
       // update mana regeneration
-      state.nextMana--;
-      if (justStartedMyTurn) {
-        if (state.nextMana <= 0) {
-          state.mana = Math.min(state.mana + 1, config.maxMana);
-          state.nextMana = msToTurns(state, config.manaRegenRate);
+      for (const clientID in state.nextMana) {
+        state.nextMana[clientID]--;
+        if (state.nextMana[clientID] <= 0) {
+          state.mana[clientID] = Math.min(state.mana[clientID] + 1, config.maxMana);
+          state.nextMana[clientID] = msToTurns(state, config.manaRegenRate);
         }
       }
 
@@ -48,19 +49,23 @@ export const rootReducer = (state, action) => {
       };
     }
     case 'DROP_PIECE': {
-      const {x, y, color, turns} = action;
-      if (isLegalPlacement(state, action)) {
-        dropPiece(state, {x, y, color, turns});
-      }
+      const {x, y, color, turns, clientID} = action;
+
+      if (state.mana[clientID] <= 0) return state;
+      if (!isLegalPlacement(state, action)) return state;
+      state.mana[clientID] -= 1;
+
+      dropPiece(state, {x, y, color, turns});
       return state;
     }
-    case 'PLACE_PIECE': {
-      const {x, y, color} = action;
-      if (isLegalPlacement(state, action)) {
-        placePiece(state, {x, y, color});
-      }
-      return state;
-    }
+    // DEPRECATED
+    // case 'PLACE_PIECE': {
+    //   const {x, y, color} = action;
+    //   if (isLegalPlacement(state, action)) {
+    //     placePiece(state, {x, y, color});
+    //   }
+    //   return state;
+    // }
 
     case 'QUEUE_ACTION': {
       state.actionQueue.push(action.action);
@@ -102,11 +107,16 @@ export const initState = () => {
 
 export const initGameState = (players, clientID) => {
   return {
+    /////////////
+    // immutable game state
     players, // Array<ClientID>
 
     width: config.boardSize,
     height: config.boardSize,
 
+
+    /////////////
+    // local game state
     turnIndex: 0, // index of player whose turn it is
     turn: 0,
 
@@ -121,8 +131,15 @@ export const initGameState = (players, clientID) => {
     startTime: Date.now(),
     lastTurnEndTime: Date.now(), // the time when my last turn ended
 
-    mana: config.startingMana,
-    nextMana: 50, // turns until next mana regen
+
+    /////////////
+    // global game state that must be shared
+    colors: arrayToMapKeys(config.colors, (color, i) => players[i]),
+    mana: arrayToMapKeys(players, () => config.startingMana),
+    nextMana: arrayToMapKeys(players, () => 10), // turns until next mana regen
+
+    lost: arrayToMapKeys(players, () => 0), // how many pieces you've lost
+    score: arrayToMapKeys(players, () => 0),
 
     fallingPieces: {}, // {EncodedPos: {color, x, y, turns}}
     pieces: {}, // {EncodedPos: {color, x, y}}

@@ -40,8 +40,9 @@ const removeDeadGroups = (state) => {
 
   for (const group of deadGroups) {
     for (const encodedPiece of group.pieces) {
+      const {color} = state.pieces[encodedPiece];
+      state.lost[state.colors[color]]++;
       delete state.pieces[encodedPiece];
-      // TODO: update score here
     }
   }
 
@@ -49,7 +50,15 @@ const removeDeadGroups = (state) => {
 };
 
 const computeScores = (state) => {
-  // TODO
+  for (const clientID in state.score) {
+    let numPieces = 0;
+    for (const ePos in state.pieces) {
+      if (state.colors[state.pieces[ePos].color] == clientID) {
+        numPieces++;
+      }
+    }
+    state.score[clientID] = numPieces - state.lost[clientID];
+  }
 };
 
 const computeGroupBelonging = (state, piece) => {

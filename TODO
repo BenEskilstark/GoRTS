@@ -1,25 +1,42 @@
 
   - playtest:
-    - can drag around the same spot and lose mana without placing more pieces
-      - because we subtract mana before dropping the piece?
-    - tabbing away pauses the socket and messes with avg TR
 
 
   - bugs:
 
 
   - open issues:
-    - each client should be tracking all game state precisely
-
-
-  - profiling how many games/clients/apm can be supported simultaneously
     - dispatch action queue as a single action at the start of your turn
+    - should be storing clientID on the pieces instead of bouncing off of color
+    - tabbing away pauses the socket and messes with avg TR
+      -  could have a timeout where the server ends your turn for you
+    - durations should be the turn that the event ends, not the duration
+      because you can be off-by-one depending on when you receive that action
 
 
-  - more interesting game mechanics
+  - alternate server models:
+    - try running it on the server entirely (w/ roundtrip actions) just to
+      see how it feels/profiles
+    - have the server count the turns
+      - have queues on the server for each client's actions and dispatch them
+        on that client's turn.
+      - but do you need a queue at all at that point? Couldn't there still be
+        race conditions?
+      - could use a CRDT-like that sends turn with all actions and first-write wins
+        (but need to ensure all state is mergeable)
+    - serialize state and send with END_TURN.
+      - All other actions only happen on client
+      - whenever you receive END_TURN, then deserialize the state that comes with it
+        (ignore any state sent like this from a turn before your own(?))
+      - if you took no actions on your turn, then could send empty state
+      - this could allow switching to a server model by dispatching actions to
+        server, END_TURN going empty, and then the server sending serialized
+        state when it sends END_TURN
+
+
+  - more interesting game mechanics:
 
 
   - scoring:
-    - count and display number of pieces lost to being captured (as negative)
     - use floodfill algorithm on empty squares to count them up
       - how to handle ambiguous areas?

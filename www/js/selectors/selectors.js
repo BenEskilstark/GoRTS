@@ -77,7 +77,7 @@ export const isLegalPlacement = (state, piece) => {
   // already dropping a piece there
   if (fallingPieces[encodePos({x, y})]) return false;
 
-  // already enqueued and action to place a piece there
+  // already enqueued an action to place a piece there
   const e = encodePos;
   if (actionQueue.find(a => pieces[e(a)] || fallingPieces[e(a)])?.color == color)
     return false;
@@ -98,10 +98,6 @@ export const getPieceGroupIndex = (state, piece) => {
   }
   console.log("piece not in a group!", piece);
   return -1;
-}
-
-export const getColorByClientID = ({players, clientID}) => {
-  return config.colors[players.indexOf(clientID)];
 }
 
 export const getTurnRate = (state) => {

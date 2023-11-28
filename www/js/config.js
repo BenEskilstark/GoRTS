@@ -7,10 +7,10 @@ export const config = {
     'orange', 'red', 'purple', 'blue', 'gray',
   ],
 
-  startingMana: 50,
-  maxMana: 50,
-  manaRegenRate: 15000000, // ms
+  startingMana: 12,
+  maxMana: 12,
+  manaRegenRate: 1500, // ms
 
-  fallingTime: 2000, // ms that a piece spends falling before it's placed
+  fallingTime: 3000, // ms that a piece spends falling before it's placed
 
 };
