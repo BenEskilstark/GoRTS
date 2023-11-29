@@ -1,6 +1,7 @@
 
 import {config} from '../config.js';
 import {arrayToMapKeys} from '../utils/helpers.js';
+import {newDuration} from '../selectors/durationSelectors.js';
 
 export const initGameState = (players, clientID) => {
   return {
@@ -32,7 +33,7 @@ export const initGameState = (players, clientID) => {
     // global game state that must be shared
     colors: arrayToMapKeys(players, (clientID, i) => config.colors[i]),
     mana: arrayToMapKeys(players, () => config.startingMana),
-    nextMana: arrayToMapKeys(players, () => 10), // turns until next mana regen
+    nextMana: arrayToMapKeys(players, () => newDuration({turn: 0}, 10)), // turns until next mana regen
 
     lost: arrayToMapKeys(players, () => 0), // how many pieces you've lost
     score: arrayToMapKeys(players, () => 0),

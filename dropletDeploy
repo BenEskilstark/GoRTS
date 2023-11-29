@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+
+ssh root@143.110.230.80 "cd GoRTS && git pull"
+ssh root@159.65.33.53 "cd GoRTS && git pull"

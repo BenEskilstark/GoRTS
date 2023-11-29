@@ -13,13 +13,6 @@ export default class GameBoard extends StatefulHTML {
   connectedCallback() {}
 
   onChange(state) {
-    // handle action queue
-    // if (state.myTurn && state.actionQueue.length > 0) {
-    //   this.dispatch({type: 'CLEAR_ACTION_QUEUE'});
-    //   for (const action of state.actionQueue) {
-    //     this.dispatchToServerAndSelf(action);
-    //   }
-    // }
 
     // handling ending your turn
     if (this.endTurnInterval == null && state.myTurn && state.realtime) {
@@ -78,7 +71,7 @@ export default class GameBoard extends StatefulHTML {
     }
 
     for (const p in state.fallingPieces) {
-      const {x, y, clientID, turns, startTurns} = state.fallingPieces[p];
+      const {x, y, clientID, duration} = state.fallingPieces[p];
       const color = state.colors[clientID];
       ctx.strokeStyle = color;
       ctx.beginPath();
@@ -86,7 +79,8 @@ export default class GameBoard extends StatefulHTML {
       ctx.stroke();
 
       const maxRadius = sqSize / 2 - 3;
-      const radius = (startTurns - turns) / startTurns * maxRadius;
+      const {numTurns, startTurn} = duration;
+      const radius = (state.turn - startTurn) / numTurns * maxRadius;
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(x * sqSize, y * sqSize, radius, 0, Math.PI * 2);
