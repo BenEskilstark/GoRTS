@@ -20,6 +20,15 @@ export const belongsToAnyGroup = ({groups}, piece) => {
   return false;
 }
 
+export const numSameNeighbors = (state, piece) => {
+  const {width, height} = state;
+  return getNeighborPositions(width, height, piece)
+    .filter(pos => state.pieces[encodePos(pos)])
+    .map(pos => state.pieces[encodePos(pos)])
+    .filter(p => p.clientID == piece.clientID)
+    .length;
+};
+
 export const getFreePositions = (state) => {
   const freePositions = [];
   forEachBoardPos(state, (pos) => {
@@ -142,7 +151,6 @@ export const getNumPiecesByClientID = (state, clientID) => {
 };
 
 
-// for debugging
 export const getPieceGroupIndex = (state, piece) => {
   for (let i = 0; i < state.groups.length; i++) {
     const group = state.groups[i];

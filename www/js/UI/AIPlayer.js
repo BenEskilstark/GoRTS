@@ -1,6 +1,7 @@
 import StatefulHTML from './StatefulHTML.js';
 import {
-  getFreePositions, belongsToAnyGroup
+  getFreePositions, belongsToAnyGroup,
+  numSameNeighbors,
 } from '../selectors/goSelectors.js';
 import {oneOf, randomIn, normalIn, weightedOneOf} from '../utils/stochastic.js';
 import {config} from '../config.js';
@@ -46,9 +47,11 @@ export default class AIPlayer extends StatefulHTML {
         });
 
       let weights = freePositions.map(pos => {
-        if (belongsToAnyGroup(state, {...pos, clientID})) {
-          return config.aiNeighborWeight;
-        }
+        const n = numSameNeighbors(state, {...pos, clientID});
+        if (n == 1) return config.aiNeighborWeight;
+        if (n == 2) return config.aiNeighborWeight / 5;
+        // if (n == 3) return config.aiNeighborWeight / 2;
+        // if (n > 0) return config.aiNeighborWeight;
         return 1;
       });
       if (freePositions.length <= 0) {
