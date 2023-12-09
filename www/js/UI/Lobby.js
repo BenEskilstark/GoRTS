@@ -1,4 +1,5 @@
 import StatefulHTML from './StatefulHTML.js';
+import {config} from '../config.js';
 
 const listedGame = (state, sessionID) => {
   const {sessions} = state;
@@ -66,7 +67,7 @@ export default class Lobby extends StatefulHTML {
     // add the client and have it join this one's game
     container.insertAdjacentHTML(
       'beforeend',
-      createAIClient({apm: 70, sessionID}),
+      createAIClient({apm: config.apm, sessionID}),
     );
 
   }

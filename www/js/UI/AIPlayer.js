@@ -1,8 +1,11 @@
 import StatefulHTML from './StatefulHTML.js';
-import {getFreePositions} from '../selectors/goSelectors.js';
+import {
+  getFreePositions, belongsToAnyGroup
+} from '../selectors/goSelectors.js';
 import {oneOf, randomIn, normalIn, weightedOneOf} from '../utils/stochastic.js';
 import {config} from '../config.js';
 import {dropPiece} from '../thunks/thunks.js';
+import {encodePos} from '../utils/positions.js';
 
 /**
  * Use like:
@@ -30,7 +33,28 @@ export default class AIPlayer extends StatefulHTML {
       const {clientID, realtime, myTurn} = state;
       if (!realtime && !myTurn) return;
 
-      const {x, y} = oneOf(getFreePositions(state));
+      let freePositions = getFreePositions(state)
+        .filter(pos => {
+          const encode = encodePos(pos);
+          for (const group of state.groups) {
+            if (group.clientID != state.clientID) continue;
+            for (const ePos in group.eyes) {
+              if (encode == ePos) return false;
+            }
+          }
+          return true;
+        });
+
+      let weights = freePositions.map(pos => {
+        if (belongsToAnyGroup(state, {...pos, clientID})) {
+          return config.aiNeighborWeight;
+        }
+        return 1;
+      });
+      if (freePositions.length <= 0) {
+        return;
+      }
+      const {x, y} = weightedOneOf(freePositions, weights);
       dropPiece(this, {x, y, clientID});
 
       if (!realtime) {

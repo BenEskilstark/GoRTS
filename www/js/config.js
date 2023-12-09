@@ -11,6 +11,9 @@ export const config = {
   maxMana: 12,
   manaRegenRate: 1500, // ms
 
+  aiNeighborWeight: 50,
+  apm: 90,
+
   fallingTime: 3000, // ms that a piece spends falling before it's placed
 
 };

@@ -1,5 +1,5 @@
 import StatefulHTML from './StatefulHTML.js';
-import {encodePos} from '../utils/positions.js';
+import {encodePos, decodePos} from '../utils/positions.js';
 import {config} from '../config.js';
 import {
   getPieceGroupIndex, getNumLiberties,
@@ -108,6 +108,19 @@ export default class GameBoard extends StatefulHTML {
         const textY = y * sqSize;
         // Draw text
         ctx.fillText(numLiberties.toString(), textX, textY);
+      }
+    }
+
+    if (true) {
+      for (const g of state.groups) {
+        for (const eye in g.eyes) {
+          const {x, y} = decodePos(eye);
+
+          ctx.strokeStyle= "red";
+          ctx.beginPath();
+          ctx.arc(x * sqSize, y * sqSize, sqSize / 2 - 3, 0, Math.PI * 2);
+          ctx.stroke();
+        }
       }
     }
 

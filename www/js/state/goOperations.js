@@ -1,6 +1,6 @@
 import {
   forEachBoardPos, belongsToGroup, getNumLiberties,
-  getNumPiecesByClientID,
+  getNumPiecesByClientID, getEyes,
 } from '../selectors/goSelectors.js';
 import {config} from '../config.js';
 import {encodePos, decodePos} from '../utils/positions.js';
@@ -11,6 +11,7 @@ export const placePiece = (state, piece) => {
   computeGroupBelonging(state, piece);
   updateLiberties(state);
   removeDeadGroups(state);
+  computeEyes(state);
   computeScores(state);
 };
 
@@ -24,6 +25,12 @@ const updateLiberties = (state) => {
     group.liberties = getNumLiberties(state, group);
   }
 };
+
+const computeEyes = (state) => {
+  state.groups.forEach((group, i) => {
+    group.eyes = getEyes(state, group, i);
+  });
+}
 
 const removeDeadGroups = (state) => {
   const nextGroups = [];

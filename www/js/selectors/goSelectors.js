@@ -11,6 +11,15 @@ export const forEachBoardPos = (state, fn) => {
   }
 }
 
+export const belongsToAnyGroup = ({groups}, piece) => {
+  for (const group of groups) {
+    if (belongsToGroup(group, piece)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 export const getFreePositions = (state) => {
   const freePositions = [];
   forEachBoardPos(state, (pos) => {
@@ -65,6 +74,43 @@ export const getNumLiberties = (state, group) => {
   }
 
   return numLiberties;
+}
+
+export const getEyes = ({width, height, pieces, groups}, group, groupIndex) => {
+  const eyes = {};
+  for (const encodedPiece of group.pieces) {
+    const emptyNeighbors = getNeighborPositions(
+      width, height, decodePos(encodedPiece)
+    ).filter(pos => !pieces[encodePos(pos)]);
+    for (const n of emptyNeighbors) {
+      const nsNeighbors = getNeighborPositions(width, height, n);
+      const isMyPiece = pos => {
+        return pieces[encodePos(pos)]?.clientID == group.clientID;
+      }
+      if (
+        nsNeighbors.filter(isMyPiece).length == nsNeighbors.length &&
+        nsNeighbors.every(piece => getGroupIndex({groups}, piece) == groupIndex)
+      ) {
+        eyes[encodePos(n)] = true;
+      }
+    }
+  }
+
+  return eyes;
+}
+
+const getGroupIndex = ({groups}, piece) => {
+  if (!piece) return -1;
+  const encoded = encodePos(piece);
+  for (let i = 0; i < groups.length; i++) {
+    const group = groups[i];
+    for (const ePos of group.pieces) {
+      if (ePos == encoded) {
+        return i;
+      }
+    }
+  }
+  console.log("didn't find");
 }
 
 export const isLegalPlacement = (state, piece) => {

@@ -29,6 +29,8 @@ export const initState = () => {
     numConnectedClients: 0,
     clientID: null,
     realtime: config.isRealtime,
+
+    groups: [],
   };
 }
 
