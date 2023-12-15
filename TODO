@@ -38,12 +38,3 @@
 
 
   - more interesting game mechanics:
-
-
-  - scoring:
-    - just fill the entire board (except for eyes) and use sum of pieces
-      when the game is obviously over?
-      - could have a timeout where game is ended and scored if no one does
-        anything for X turns
-    - use floodfill algorithm on empty squares to count them up
-      - how to handle ambiguous areas?

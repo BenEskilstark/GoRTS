@@ -15,7 +15,8 @@ export default class ScoreInfo extends StatefulHTML {
       const placed = getNumPiecesByClientID(state, clientID);
       const color = config.colors[i];
 
-      let scoreStr = `${placed} - ${lost} = <b>${score}</b>`;
+      // let scoreStr = `${placed} - ${lost} = <b>${score}</b>`;
+      let scoreStr = placed;
       pieceStr += `&nbsp; <span style="color:${color}">${scoreStr}</span>`;
     }
 
