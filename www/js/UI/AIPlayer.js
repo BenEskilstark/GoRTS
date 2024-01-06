@@ -6,7 +6,9 @@ import {
 import {oneOf, randomIn, normalIn, weightedOneOf} from '../utils/stochastic.js';
 import {config} from '../config.js';
 import {dropPiece} from '../thunks/thunks.js';
-import {encodePos} from '../utils/positions.js';
+import {encodePos, decodePos} from '../utils/positions.js';
+import {createBot} from '../bots/bot.js';
+import {botConfigs} from '../bots/bot_config.js';
 
 /**
  * Use like:
@@ -28,11 +30,23 @@ export default class AIPlayer extends StatefulHTML {
   }
 
   setupAI() {
+    let botConfig = botConfigs[this.getAttribute("botConfig")] || botConfigs.random;
+    botConfig.playerId = this.getState().clientID;
+    let bot = createBot({numRows: config.boardSize, numCols: config.boardSize, config: botConfig});
+
     this.playInterval = setInterval(() => {
       const state = this.getState();
       if (state.screen != "GAME" ) return;
-      const {clientID, realtime, myTurn} = state;
+      const {clientID, realtime, myTurn, pieces} = state;
+
       if (!realtime && !myTurn) return;
+
+      // Generates weights for free positions.
+      bot.reset();
+      for (const encodedPos in pieces) {
+        const {x, y, clientID} = decodePos(encodedPos);
+        bot.doMove(x, y, clientID);
+      }
 
       let freePositions = getFreePositions(state)
         .filter(pos => {
@@ -47,16 +61,14 @@ export default class AIPlayer extends StatefulHTML {
         });
 
       let weights = freePositions.map(pos => {
-        const n = numSameNeighbors(state, {...pos, clientID});
-        if (n == 1) return config.aiNeighborWeight;
-        if (n == 2) return config.aiNeighborWeight / 5;
-        // if (n == 3) return config.aiNeighborWeight / 2;
-        // if (n > 0) return config.aiNeighborWeight;
-        return 1;
+        const {x, y} = pos;
+        return bot.weights[x][y];
       });
+
       if (freePositions.length <= 0) {
         return;
       }
+
       const {x, y} = weightedOneOf(freePositions, weights);
       dropPiece(this, {x, y, clientID});
 
