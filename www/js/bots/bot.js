@@ -1,10 +1,48 @@
+// BotConfig properties:
+//
+// ---- initSideDistance
+// Starting weight for squares based on min distance from sides.
+// Min distance is based on the lesser of row/col.
+// Example: ('=0', '=100', '=300')
+// Set weight to 0 for rank 1, 100 for 2, and 300 for 3+
+//
+// ---- friendlyNeighbors
+// Weights for 1, 2, 3, 4 friendly neighbors.
+// This is cumulative.
+// Example: ('=500', '=100', '=1', '=0').
+// Set weight to 500 for 1, 100 for 2, 1 for 3, and 0 for 4 neighbors.
+//
+// ---- enemyNeighbors
+// Weights for 1, 2, 3, 4 enemy neighbors.
+// This is cumulative.
+// Example: ('=500', '=100', '=1', '=0').
+// Set weight to 500 for 1, 100 for 2, 1 for 3, and 0 for 4 neighbors.
+//
+// ---- friendlyAttackLines
+// Weights for 1, 2, etc. friendly neighbors in same row/col.
+// This is cumulative.
+// Example: ('=10', '=100')
+// Set weight to 10 for 1, 100 for 2+
+//
+// ---- friendlyDiagonals
+// Weights for 1, 2, 3, 4 friendly diagonal neighbors.
+// This is cumulative.
+// Example: ('=500', '=100', '=1', '=0').
+// Set weight to 500 for 1, 100 for 2, 1 for 3, and 0 for 4 neighbors.
 class BotConfig {
-  constructor({ playerId, initSideDistance = null, friendlyNeighbors = null, enemyNeighbors = null, friendlyAttackLines = null }) {
+  constructor({ 
+      playerId,
+      initSideDistance = null,
+      friendlyNeighbors = null,
+      enemyNeighbors = null,
+      friendlyAttackLines = null,
+      friendlyDiagonals = null }) {
     this.playerId = playerId;
     this.initSideDistance = initSideDistance;
     this.friendlyNeighbors = friendlyNeighbors;
     this.enemyNeighbors = enemyNeighbors;
     this.friendlyAttackLines = friendlyAttackLines;
+    this.friendlyDiagonals = friendlyDiagonals;
   }
 }
 
@@ -71,6 +109,13 @@ class Bot {
       this.updateOnFriendlyNeighbors(row, col + 1);
     }
 
+    if (this.config.friendlyDiagonals && this.playerId == playerId) {
+      this.updateOnFriendlyDiagonals(row - 1, col - 1);
+      this.updateOnFriendlyDiagonals(row + 1, col + 1);
+      this.updateOnFriendlyDiagonals(row + 1, col - 1);
+      this.updateOnFriendlyDiagonals(row - 1, col + 1);
+    }
+
     if (this.config.enemyNeighbors && this.playerId != playerId) {
       this.updateOnEnemyNeighbors(row - 1, col);
       this.updateOnEnemyNeighbors(row + 1, col);
@@ -106,6 +151,19 @@ class Bot {
     this.updateWeight(row, col, this.config.friendlyNeighbors[numFriendlyNeighbors - 1]);
   }
 
+  updateOnFriendlyDiagonals(row, col) {
+    if (!this.isValid(row, col)) {
+      return;
+    }
+    let numFriendlyNeighbors = (
+      (this.isValid(row - 1, col - 1) && this.board[row - 1][col - 1] == this.playerId) +
+      (this.isValid(row + 1, col + 1) && this.board[row + 1][col + 1] == this.playerId) +
+      (this.isValid(row + 1, col - 1) && this.board[row + 1][col - 1] == this.playerId) +
+      (this.isValid(row - 1, col + 1) && this.board[row - 1][col + 1] == this.playerId)
+    );
+    this.updateWeight(row, col, this.config.friendlyDiagonals[numFriendlyNeighbors - 1]);
+  }
+
   updateOnEnemyNeighbors(row, col) {
     if (!this.isValid(row, col)) {
       return;
@@ -130,9 +188,6 @@ class Bot {
       const maxAllowedInd = this.config.friendlyAttackLines.length - 1;
       const ind = Math.min(maxAllowedInd, count - 1);
       for (let otherRow = 0; otherRow < this.numRows; otherRow++) {
-        if (row == otherRow) {
-          continue;
-        }
         this.updateWeight(otherRow, col, this.config.friendlyAttackLines[ind]);
       }
     }
@@ -147,9 +202,6 @@ class Bot {
       const maxAllowedInd = this.config.friendlyAttackLines.length - 1;
       const ind = Math.min(maxAllowedInd, count - 1);
       for (let otherCol = 0; otherCol < this.numCols; otherCol++) {
-        if (col == otherCol) {
-          continue;
-        }
         this.updateWeight(row, otherCol, this.config.friendlyAttackLines[ind]);
       }
     }
