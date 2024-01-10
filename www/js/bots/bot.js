@@ -121,23 +121,35 @@ class Bot {
 
   updateOnFriendlyAttackLines(row, col) {
     const updateOnFriendlyAttackLinesRow = () => {
+      let count = 0;
+      for (let otherRow = 0; otherRow < this.numRows; otherRow++) {
+        if (this.board[otherRow][col] == this.playerId) {
+          count++;
+        }
+      }
+      const maxAllowedInd = this.config.friendlyAttackLines.length - 1;
+      const ind = Math.min(maxAllowedInd, count - 1);
       for (let otherRow = 0; otherRow < this.numRows; otherRow++) {
         if (row == otherRow) {
           continue;
         }
-        let maxAllowedInd = this.config.friendlyAttackLines.length - 1;
-        let ind = Math.min(maxAllowedInd, Math.abs(otherRow - row) - 1);
         this.updateWeight(otherRow, col, this.config.friendlyAttackLines[ind]);
       }
     }
 
     const updateOnFriendlyAttackLinesCol = () => {
+      let count = 0;
+      for (let otherCol = 0; otherCol < this.numCols; otherCol++) {
+        if (this.board[row][otherCol] == this.playerId) {
+          count++;
+        }
+      }
+      const maxAllowedInd = this.config.friendlyAttackLines.length - 1;
+      const ind = Math.min(maxAllowedInd, count - 1);
       for (let otherCol = 0; otherCol < this.numCols; otherCol++) {
         if (col == otherCol) {
           continue;
         }
-        let maxAllowedInd = this.config.friendlyAttackLines.length - 1;
-        let ind = Math.min(maxAllowedInd, Math.abs(otherCol - col) - 1);
         this.updateWeight(row, otherCol, this.config.friendlyAttackLines[ind]);
       }
     }
