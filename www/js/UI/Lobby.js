@@ -1,5 +1,7 @@
 import StatefulHTML from './StatefulHTML.js';
 import {config} from '../config.js';
+import {botConfigs} from '../bots/bot_config.js';
+import {dropdown} from '../UI/components/Dropdown.js';
 
 const listedGame = (state, sessionID) => {
   const {sessions} = state;
@@ -30,7 +32,10 @@ const listedGame = (state, sessionID) => {
       >
         Add AI Player
       </button>
-      <input type="text" id="botConfig" name="botConfig" value="alpha">
+      ${dropdown({id: "botConfig",
+        options: Object.keys(botConfigs),
+        selected: document.getElementById('botConfig')?.value,
+      })}
     </div>
   `;
 }
@@ -64,7 +69,6 @@ export default class Lobby extends StatefulHTML {
   addAIPlayer() {
     const container = document.getElementById("container");
     const {sessionID} = this.getState();
-    
     const botConfig = document.getElementById('botConfig').value;
 
     // add the client and have it join this one's game
