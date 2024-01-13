@@ -30,8 +30,7 @@ export default class AIPlayer extends StatefulHTML {
   }
 
   setupAI() {
-    let botConfig = botConfigs[this.getAttribute("botConfig")] || botConfigs.random;
-    botConfig.playerId = this.getState().clientID;
+    let botConfig = botConfigs[this.getAttribute("botConfig")];
     let bot = createBot({numRows: config.boardSize, numCols: config.boardSize, config: botConfig});
 
     this.playInterval = setInterval(() => {
@@ -42,9 +41,10 @@ export default class AIPlayer extends StatefulHTML {
       if (!realtime && !myTurn) return;
 
       // Generates weights for free positions.
+      bot.playerId = clientID;
       bot.reset();
       for (const encodedPos in pieces) {
-        const {x, y, clientID} = decodePos(encodedPos);
+        const {x, y, clientID} = pieces[encodedPos];
         bot.doMove(x, y, clientID);
       }
 
@@ -53,21 +53,26 @@ export default class AIPlayer extends StatefulHTML {
           const encode = encodePos(pos);
           for (const group of state.groups) {
             if (group.clientID != state.clientID) continue;
+            let eye_count = 0;
             for (const ePos in group.eyes) {
+              if (eye_count >= 2) break;
               if (encode == ePos) return false;
+              eye_count++;
             }
           }
+          const {x, y} = pos;
+          if (bot.weights[x][y] <= 0) return false;
           return true;
         });
+
+      if (freePositions.length <= 0) {
+        return;
+      }
 
       let weights = freePositions.map(pos => {
         const {x, y} = pos;
         return bot.weights[x][y];
       });
-
-      if (freePositions.length <= 0) {
-        return;
-      }
 
       const {x, y} = weightedOneOf(freePositions, weights);
       dropPiece(this, {x, y, clientID});
