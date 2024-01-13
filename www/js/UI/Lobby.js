@@ -30,15 +30,15 @@ const listedGame = (state, sessionID) => {
       >
         Add AI Player
       </button>
-      <input type="text" id="bot_config" name="bot_config" value="alpha">
+      <input type="text" id="botConfig" name="botConfig" value="alpha">
     </div>
   `;
 }
 
-const createAIClient = ({apm, sessionID, bot_config}) => {
+const createAIClient = ({apm, sessionID, botConfig}) => {
   return `
     <stateful-client sessionID="${sessionID}">
-      <ai-player apm=${apm} bot_config=${bot_config}></ai-player>
+      <ai-player apm=${apm} botConfig=${botConfig}></ai-player>
       <game-board></game-board>
     </stateful-client>
   `;
@@ -65,12 +65,12 @@ export default class Lobby extends StatefulHTML {
     const container = document.getElementById("container");
     const {sessionID} = this.getState();
     
-    const bot_config = document.getElementById('bot_config').value;
+    const botConfig = document.getElementById('botConfig').value;
 
     // add the client and have it join this one's game
     container.insertAdjacentHTML(
       'beforeend',
-      createAIClient({apm: config.apm, sessionID, bot_config}),
+      createAIClient({apm: config.apm, sessionID, botConfig}),
     );
 
   }
