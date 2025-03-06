@@ -1,4 +1,11 @@
+const isLocalHost = false;
+
 export const config = {
+  isLocalHost,
+  URL: isLocalHost ? null : "https://benhub.io",
+  path: isLocalHost ? null : "/gorts/socket.io",
+
+
   isRealtime: true,
   turnTime: 0, // ms
   boardSize: 30,

@@ -9,7 +9,8 @@ const {
 } = require('./sessions.js');
 require('dotenv').config();
 
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 8005;
+console.log(port);
 
 const app = express();
 app.use(express.json());
@@ -21,8 +22,8 @@ app.use(express.static(path.join(__dirname, '../www')));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.HOSTNAME + ":" + port,
-    // origin: "http://localhost:8000",
+    // origin: process.env.HOSTNAME + ":" + port,
+    origin: "https://benhub.io",
     methods: ["GET", "POST"],
   }
 });

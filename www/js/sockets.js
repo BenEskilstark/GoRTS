@@ -1,8 +1,8 @@
 
+import {config} from "./config.js";
+
 export const setupSocket = (dispatch) => {
-  let hostname = window.location.hostname;
-  if (hostname == 'localhost') hostname += ':8000';
-  const socket = io(hostname);
+  const socket = io(config.URL, {path: config.path});
   socket.on("action", dispatch);
   return socket;
 }
